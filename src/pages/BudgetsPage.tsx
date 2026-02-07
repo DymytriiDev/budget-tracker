@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getIcon } from "@/lib/icons";
+import { formatCurrency } from "@/lib/currency";
 
 export function BudgetsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -33,10 +34,19 @@ export function BudgetsPage() {
       .filter((e) => e.categoryId === categoryId)
       .reduce((sum, e) => sum + e.amount, 0);
 
-  const getLimitForCategory = (categoryId: string) => {
-    if (localLimits[categoryId] !== undefined) return localLimits[categoryId];
+  const getSavedLimit = (categoryId: string) => {
     const budget = monthBudgets.find((b) => b.categoryId === categoryId);
     return budget ? String(budget.limit) : "";
+  };
+
+  const getLimitForCategory = (categoryId: string) => {
+    if (localLimits[categoryId] !== undefined) return localLimits[categoryId];
+    return getSavedLimit(categoryId);
+  };
+
+  const isChanged = (categoryId: string) => {
+    if (localLimits[categoryId] === undefined) return false;
+    return localLimits[categoryId] !== getSavedLimit(categoryId);
   };
 
   const handleSave = (categoryId: string) => {
@@ -56,9 +66,9 @@ export function BudgetsPage() {
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Budgets</h1>
+          <h1 className="text-2xl font-bold">Budgets</h1>
           <p className="mt-1 text-muted-foreground">
             Set monthly spending limits per category
           </p>
@@ -71,7 +81,7 @@ export function BudgetsPage() {
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="min-w-[140px] text-center text-lg font-semibold">
+          <span className="min-w-[140px] text-center font-semibold">
             {format(currentDate, "MMMM yyyy")}
           </span>
           <Button
@@ -84,21 +94,21 @@ export function BudgetsPage() {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
         >
           <Card className="border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
                 Total Budget
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-primary">
-                ${totalBudget.toLocaleString()}
+              <p className="text-xl font-bold text-primary">
+                {formatCurrency(totalBudget)}
               </p>
             </CardContent>
           </Card>
@@ -109,15 +119,13 @@ export function BudgetsPage() {
           transition={{ delay: 0.1 }}
         >
           <Card className="border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
                 Total Spent
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">
-                ${totalSpent.toLocaleString()}
-              </p>
+              <p className="text-xl font-bold">{formatCurrency(totalSpent)}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -127,23 +135,23 @@ export function BudgetsPage() {
           transition={{ delay: 0.2 }}
         >
           <Card className="border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="pb-1">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
                 Remaining
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p
-                className={`text-2xl font-bold ${totalBudget - totalSpent >= 0 ? "text-primary" : "text-destructive"}`}
+                className={`text-xl font-bold ${totalBudget - totalSpent >= 0 ? "text-primary" : "text-destructive"}`}
               >
-                ${(totalBudget - totalSpent).toLocaleString()}
+                {formatCurrency(Math.abs(totalBudget - totalSpent))}
               </p>
             </CardContent>
           </Card>
         </motion.div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {categories.map((cat, i) => {
           const Icon = getIcon(cat.icon);
           const spent = getSpentForCategory(cat.id);
@@ -151,6 +159,7 @@ export function BudgetsPage() {
           const limit = parseFloat(limitStr) || 0;
           const pct = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
           const isOver = spent > limit && limit > 0;
+          const changed = isChanged(cat.id);
 
           return (
             <motion.div
@@ -160,23 +169,23 @@ export function BudgetsPage() {
               transition={{ delay: i * 0.05 }}
             >
               <Card className="border-border/50">
-                <CardContent className="flex items-center gap-4 p-4">
+                <CardContent className="flex items-center gap-3 p-3">
                   <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
                     style={{ backgroundColor: cat.color + "20" }}
                   >
-                    <Icon className="h-5 w-5" style={{ color: cat.color }} />
+                    <Icon className="h-4 w-4" style={{ color: cat.color }} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center justify-between">
-                      <p className="font-medium">{cat.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        ${spent.toFixed(2)}{" "}
-                        {limit > 0 && `/ $${limit.toFixed(2)}`}
+                    <div className="mb-0.5 flex items-center justify-between">
+                      <p className="text-xs font-medium">{cat.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(spent)}{" "}
+                        {limit > 0 && `/ ${formatCurrency(limit)}`}
                       </p>
                     </div>
                     {limit > 0 && (
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{
@@ -191,7 +200,7 @@ export function BudgetsPage() {
                     <Input
                       type="number"
                       placeholder="Limit"
-                      className="w-28"
+                      className="w-28 h-10 text-base"
                       value={getLimitForCategory(cat.id)}
                       onChange={(e) =>
                         setLocalLimits((prev) => ({
@@ -201,14 +210,16 @@ export function BudgetsPage() {
                       }
                       onKeyDown={(e) => e.key === "Enter" && handleSave(cat.id)}
                     />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9"
-                      onClick={() => handleSave(cat.id)}
-                    >
-                      <Save className="h-4 w-4" />
-                    </Button>
+                    {changed && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-10 w-10"
+                        onClick={() => handleSave(cat.id)}
+                      >
+                        <Save className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

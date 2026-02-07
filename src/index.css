@@ -86,12 +86,21 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-sm;
     font-family:
       "Inter",
       system-ui,
       -apple-system,
       sans-serif;
+  }
+  button,
+  [role="button"],
+  a[href],
+  select,
+  [data-slot="select-trigger"],
+  [data-slot="dropdown-menu-trigger"],
+  .cursor-pointer {
+    cursor: pointer !important;
   }
 }
 
