@@ -82,8 +82,10 @@ function SortableCategoryCard({
             {...attributes}
             {...listeners}
             className="flex h-8 w-5 shrink-0 cursor-grab items-center justify-center text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
+            aria-label={`Reorder ${cat.name}`}
+            aria-roledescription="sortable"
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-4 w-4" aria-hidden="true" />
           </button>
           <div
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
@@ -95,20 +97,22 @@ function SortableCategoryCard({
             <p className="truncate text-sm font-semibold">{cat.name}</p>
             <p className="text-xs text-muted-foreground">{cat.icon}</p>
           </div>
-          <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-9 w-9 sm:h-7 sm:w-7"
               onClick={() => onEdit(cat)}
+              aria-label={`Edit ${cat.name}`}
             >
               <Pencil className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-destructive hover:text-destructive"
+              className="h-9 w-9 sm:h-7 sm:w-7 text-destructive hover:text-destructive"
               onClick={() => onDelete(cat.id)}
+              aria-label={`Delete ${cat.name}`}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
@@ -177,15 +181,19 @@ export function CategoriesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Categories</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="text-xl font-bold md:text-2xl">Categories</h1>
+          <p className="mt-0.5 text-muted-foreground">
             Manage your spending categories
           </p>
         </div>
-        <Button onClick={openNew} className="gap-2 h-10 px-4">
-          <Plus className="h-4 w-4" /> New Category
+        <Button
+          onClick={openNew}
+          className="gap-2 h-10 px-4 w-full sm:w-auto"
+          aria-label="Create new category"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" /> New Category
         </Button>
       </div>
 
@@ -230,39 +238,43 @@ export function CategoriesPage() {
             </div>
             <div className="space-y-2">
               <Label>Icon</Label>
-              <div className="grid grid-cols-7 gap-1.5">
+              <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-7">
                 {Object.entries(AVAILABLE_ICONS).map(([iconName, IconComp]) => (
                   <button
                     key={iconName}
                     type="button"
                     onClick={() => setIcon(iconName)}
                     className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-lg border transition-all",
+                      "flex h-10 w-10 items-center justify-center rounded-lg border transition-all sm:h-9 sm:w-9",
                       icon === iconName
                         ? "border-primary bg-primary/15 text-primary"
                         : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
                     )}
+                    aria-label={iconName}
+                    aria-pressed={icon === iconName}
                   >
-                    <IconComp className="h-4 w-4" />
+                    <IconComp className="h-4 w-4" aria-hidden="true" />
                   </button>
                 ))}
               </div>
             </div>
             <div className="space-y-2">
               <Label>Color</Label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {COLORS.map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
                     className={cn(
-                      "h-7 w-7 rounded-full border-2 transition-all",
+                      "h-9 w-9 rounded-full border-2 transition-all sm:h-7 sm:w-7",
                       color === c
                         ? "border-white scale-110"
                         : "border-transparent",
                     )}
                     style={{ backgroundColor: c }}
+                    aria-label={`Color ${c}`}
+                    aria-pressed={color === c}
                   />
                 ))}
               </div>

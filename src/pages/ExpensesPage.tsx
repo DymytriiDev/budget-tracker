@@ -133,49 +133,134 @@ export function ExpensesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Expenses</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="text-xl font-bold md:text-2xl">Expenses</h1>
+          <p className="mt-0.5 text-muted-foreground">
             Track and manage your spending
           </p>
         </div>
-        <Button onClick={openNew} className="gap-2 h-10 px-4">
-          <Plus className="h-4 w-4" /> Add Expense
+        <Button
+          onClick={openNew}
+          className="gap-2 h-10 px-4 w-full sm:w-auto"
+          aria-label="Add new expense"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" /> Add Expense
         </Button>
       </div>
 
       <Card className="border-border/50">
         <CardContent className="p-3">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
               <Input
                 placeholder="Search expenses..."
                 className="pl-9"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search expenses"
               />
             </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs">
-              Total: {formatCurrency(totalFiltered)}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger
+                  className="w-full sm:w-48"
+                  aria-label="Filter by category"
+                >
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Badge
+                variant="secondary"
+                className="shrink-0 px-3 py-1.5 text-xs"
+              >
+                Total: {formatCurrency(totalFiltered)}
+              </Badge>
+            </div>
           </div>
 
-          <div className="rounded-lg border border-border">
+          {/* Mobile card list */}
+          <div
+            className="space-y-2 md:hidden"
+            role="list"
+            aria-label="Expenses list"
+          >
+            {filtered.length === 0 ? (
+              <p className="py-12 text-center text-muted-foreground">
+                No expenses found. Tap "Add Expense" to get started.
+              </p>
+            ) : (
+              filtered.map((exp) => {
+                const cat = getCat(exp.categoryId);
+                const Icon = cat ? getIcon(cat.icon) : getIcon("Tag");
+                return (
+                  <div
+                    key={exp.id}
+                    role="listitem"
+                    className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors active:bg-muted/50"
+                    onClick={() => openEdit(exp)}
+                    onKeyDown={(e) => e.key === "Enter" && openEdit(exp)}
+                    tabIndex={0}
+                    aria-label={`${exp.description}, ${formatCurrency(exp.amount)}, ${format(new Date(exp.date), "MMM dd, yyyy")}`}
+                  >
+                    {cat && (
+                      <div
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                        style={{ backgroundColor: cat.color + "20" }}
+                      >
+                        <Icon
+                          className="h-4 w-4"
+                          style={{ color: cat.color }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {exp.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(exp.date), "MMM dd, yyyy")}
+                        {cat ? ` · ${cat.name}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold tabular-nums">
+                        {formatCurrency(exp.amount)}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteExpense(exp.id);
+                        }}
+                        aria-label={`Delete ${exp.description}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden rounded-lg border border-border md:block">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -186,7 +271,8 @@ export function ExpensesPage() {
                       className="gap-1 -ml-3"
                       onClick={() => toggleSort("date")}
                     >
-                      Date <ArrowUpDown className="h-3 w-3" />
+                      Date{" "}
+                      <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
                     </Button>
                   </TableHead>
                   <TableHead>
@@ -196,7 +282,8 @@ export function ExpensesPage() {
                       className="gap-1 -ml-3"
                       onClick={() => toggleSort("description")}
                     >
-                      Description <ArrowUpDown className="h-3 w-3" />
+                      Description{" "}
+                      <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
                     </Button>
                   </TableHead>
                   <TableHead>Category</TableHead>
@@ -207,10 +294,13 @@ export function ExpensesPage() {
                       className="gap-1 -mr-3 ml-auto"
                       onClick={() => toggleSort("amount")}
                     >
-                      Amount <ArrowUpDown className="h-3 w-3" />
+                      Amount{" "}
+                      <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
                     </Button>
                   </TableHead>
-                  <TableHead className="w-24" />
+                  <TableHead className="w-24">
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -245,6 +335,7 @@ export function ExpensesPage() {
                               <Icon
                                 className="h-3.5 w-3.5"
                                 style={{ color: cat.color }}
+                                aria-hidden="true"
                               />
                               <span className="text-xs">{cat.name}</span>
                             </div>
@@ -263,6 +354,7 @@ export function ExpensesPage() {
                                 e.stopPropagation();
                                 deleteExpense(exp.id);
                               }}
+                              aria-label={`Delete ${exp.description}`}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>

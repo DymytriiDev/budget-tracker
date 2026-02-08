@@ -66,32 +66,37 @@ export function BudgetsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Budgets</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="text-xl font-bold md:text-2xl">Budgets</h1>
+          <p className="mt-0.5 text-muted-foreground">
             Set monthly spending limits per category
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <nav className="flex items-center gap-2" aria-label="Month navigation">
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentDate((d) => subMonths(d, 1))}
+            aria-label="Previous month"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="min-w-[140px] text-center font-semibold">
+          <span
+            className="min-w-[130px] text-center font-semibold text-sm"
+            aria-live="polite"
+          >
             {format(currentDate, "MMMM yyyy")}
           </span>
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentDate((d) => addMonths(d, 1))}
+            aria-label="Next month"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-        </div>
+        </nav>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -169,38 +174,79 @@ export function BudgetsPage() {
               transition={{ delay: i * 0.05 }}
             >
               <Card className="border-border/50">
-                <CardContent className="flex items-center gap-3 p-3">
-                  <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: cat.color + "20" }}
-                  >
-                    <Icon className="h-4 w-4" style={{ color: cat.color }} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-0.5 flex items-center justify-between">
-                      <p className="text-xs font-medium">{cat.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatCurrency(spent)}{" "}
-                        {limit > 0 && `/ ${formatCurrency(limit)}`}
-                      </p>
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: cat.color + "20" }}
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-4 w-4" style={{ color: cat.color }} />
                     </div>
-                    {limit > 0 && (
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${Math.min(pct, 100)}%`,
-                            backgroundColor: isOver ? "#ef4444" : cat.color,
-                          }}
-                        />
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-0.5 flex items-center justify-between">
+                        <p className="text-xs font-medium">{cat.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatCurrency(spent)}{" "}
+                          {limit > 0 && `/ ${formatCurrency(limit)}`}
+                        </p>
                       </div>
-                    )}
+                      {limit > 0 && (
+                        <div
+                          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary"
+                          role="progressbar"
+                          aria-valuenow={Math.round(pct)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label={`${cat.name} budget usage`}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(pct, 100)}%`,
+                              backgroundColor: isOver ? "#ef4444" : cat.color,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {/* Desktop inline input */}
+                    <div className="hidden items-center gap-2 sm:flex">
+                      <Input
+                        type="number"
+                        placeholder="Limit"
+                        className="w-28 h-10 text-base"
+                        value={getLimitForCategory(cat.id)}
+                        onChange={(e) =>
+                          setLocalLimits((prev) => ({
+                            ...prev,
+                            [cat.id]: e.target.value,
+                          }))
+                        }
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleSave(cat.id)
+                        }
+                        aria-label={`Budget limit for ${cat.name}`}
+                      />
+                      {changed && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10"
+                          onClick={() => handleSave(cat.id)}
+                          aria-label={`Save budget for ${cat.name}`}
+                        >
+                          <Save className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {/* Mobile stacked input */}
+                  <div className="mt-2 flex items-center gap-2 sm:hidden">
                     <Input
                       type="number"
-                      placeholder="Limit"
-                      className="w-28 h-10 text-base"
+                      placeholder="Set limit"
+                      className="flex-1 h-10 text-base"
                       value={getLimitForCategory(cat.id)}
                       onChange={(e) =>
                         setLocalLimits((prev) => ({
@@ -209,6 +255,7 @@ export function BudgetsPage() {
                         }))
                       }
                       onKeyDown={(e) => e.key === "Enter" && handleSave(cat.id)}
+                      aria-label={`Budget limit for ${cat.name}`}
                     />
                     {changed && (
                       <Button
@@ -216,6 +263,7 @@ export function BudgetsPage() {
                         size="icon"
                         className="h-10 w-10"
                         onClick={() => handleSave(cat.id)}
+                        aria-label={`Save budget for ${cat.name}`}
                       >
                         <Save className="h-4 w-4" />
                       </Button>

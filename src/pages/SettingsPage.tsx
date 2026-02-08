@@ -43,8 +43,8 @@ export function SettingsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-xl font-bold md:text-2xl">Settings</h1>
+        <p className="mt-0.5 text-muted-foreground">
           Configure your budget tracker
         </p>
       </div>
@@ -66,6 +66,7 @@ export function SettingsPage() {
                   setMonthStartDay(parseInt(e.target.value) || 1)
                 }
                 className="h-11 w-32 text-base"
+                aria-label="Month start day"
               />
               <p className="text-xs text-muted-foreground">
                 Budget periods run from day {monthStartDay} of each month to day{" "}
@@ -83,21 +84,27 @@ export function SettingsPage() {
             <div className="flex items-center gap-2 text-sm">
               {local ? (
                 <>
-                  <CloudOff className="h-4 w-4 text-muted-foreground" />
+                  <CloudOff
+                    className="h-4 w-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   <span className="text-muted-foreground">
                     Local mode — sync disabled on localhost
                   </span>
                 </>
               ) : token ? (
                 <>
-                  <Cloud className="h-4 w-4 text-primary" />
+                  <Cloud className="h-4 w-4 text-primary" aria-hidden="true" />
                   <span className="text-primary">
                     Connected — syncing to cloud
                   </span>
                 </>
               ) : (
                 <>
-                  <CloudOff className="h-4 w-4 text-muted-foreground" />
+                  <CloudOff
+                    className="h-4 w-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   <span className="text-muted-foreground">Not connected</span>
                 </>
               )}
@@ -114,6 +121,7 @@ export function SettingsPage() {
                 >
                   <RefreshCw
                     className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
+                    aria-hidden="true"
                   />
                   Push to cloud
                 </Button>
@@ -126,6 +134,7 @@ export function SettingsPage() {
                 >
                   <RefreshCw
                     className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
+                    aria-hidden="true"
                   />
                   Pull from cloud
                 </Button>
@@ -153,7 +162,7 @@ export function SettingsPage() {
                   className="gap-1.5 h-9 text-destructive hover:text-destructive"
                   onClick={handleLogout}
                 >
-                  <LogOut className="h-3.5 w-3.5" />
+                  <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
                   Sign out
                 </Button>
               </div>

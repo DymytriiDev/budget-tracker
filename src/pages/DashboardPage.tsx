@@ -318,36 +318,45 @@ export function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="text-xl font-bold md:text-2xl">Dashboard</h1>
+          <p className="mt-0.5 text-muted-foreground">
             Your financial overview at a glance
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <nav className="flex items-center gap-2" aria-label="Month navigation">
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentDate((d) => subMonths(d, 1))}
+            aria-label="Previous month"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="min-w-[140px] text-center font-semibold">
+          <span
+            className="min-w-[130px] text-center font-semibold text-sm"
+            aria-live="polite"
+          >
             {format(currentDate, "MMMM yyyy")}
           </span>
           <Button
             variant="outline"
             size="icon"
             onClick={() => setCurrentDate((d) => addMonths(d, 1))}
+            aria-label="Next month"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-        </div>
+        </nav>
       </div>
 
       {/* Summary Cards */}
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        className="mb-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4"
+        role="region"
+        aria-label="Budget summary"
+      >
         <motion.div
           custom={0}
           initial="hidden"
@@ -463,7 +472,7 @@ export function DashboardPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-2">
         <motion.div initial="hidden" animate="visible" variants={chartVariants}>
           <ChartCard
             id="bar"
@@ -471,7 +480,7 @@ export function DashboardPage() {
             empty={barData.length === 0}
             emptyMsg="No data for this month."
           >
-            {renderBarChart(260)}
+            {renderBarChart(220)}
           </ChartCard>
         </motion.div>
         <motion.div initial="hidden" animate="visible" variants={chartVariants}>
@@ -481,13 +490,13 @@ export function DashboardPage() {
             empty={pieData.length === 0}
             emptyMsg="No spending data."
           >
-            {renderPieChart(260)}
+            {renderPieChart(220)}
           </ChartCard>
         </motion.div>
       </div>
 
       {/* Trend + Top Categories */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
         <motion.div
           className="lg:col-span-2"
           initial="hidden"
@@ -495,7 +504,7 @@ export function DashboardPage() {
           variants={chartVariants}
         >
           <ChartCard id="line" title="Monthly Trend (6 months)">
-            {renderLineChart(240)}
+            {renderLineChart(200)}
           </ChartCard>
         </motion.div>
 
@@ -565,7 +574,7 @@ export function DashboardPage() {
         open={!!fullscreenChart}
         onOpenChange={() => setFullscreenChart(null)}
       >
-        <DialogContent className="max-w-5xl h-[80vh]">
+        <DialogContent className="max-w-[95vw] h-[85vh] sm:max-w-5xl sm:h-[80vh]">
           <DialogHeader>
             <DialogTitle>
               {fullscreenChart === "bar" && "Budget vs Actual"}
@@ -574,9 +583,12 @@ export function DashboardPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0 pt-2">
-            {fullscreenChart === "bar" && renderBarChart(500)}
-            {fullscreenChart === "pie" && renderPieChart(500)}
-            {fullscreenChart === "line" && renderLineChart(500)}
+            {fullscreenChart === "bar" &&
+              renderBarChart(Math.min(window.innerHeight * 0.6, 500))}
+            {fullscreenChart === "pie" &&
+              renderPieChart(Math.min(window.innerHeight * 0.6, 500))}
+            {fullscreenChart === "line" &&
+              renderLineChart(Math.min(window.innerHeight * 0.6, 500))}
           </div>
         </DialogContent>
       </Dialog>
