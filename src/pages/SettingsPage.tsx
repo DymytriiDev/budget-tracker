@@ -1,22 +1,58 @@
-import { useSettingsStore } from '@/stores/settingsStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { Cloud, CloudOff, LogOut, RefreshCw, Copy, Check } from "lucide-react";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { getAuthToken, clearAuthToken, isLocalDev } from "@/lib/auth";
+import { pushRemoteState, loadRemoteState } from "@/lib/sync";
 
 export function SettingsPage() {
   const { monthStartDay, setMonthStartDay } = useSettingsStore();
+  const token = getAuthToken();
+  const local = isLocalDev();
+  const [syncing, setSyncing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleForceSync = async () => {
+    setSyncing(true);
+    await pushRemoteState();
+    setSyncing(false);
+  };
+
+  const handleForcePull = async () => {
+    setSyncing(true);
+    await loadRemoteState();
+    setSyncing(false);
+  };
+
+  const handleLogout = () => {
+    clearAuthToken();
+    window.location.reload();
+  };
+
+  const handleCopyLink = () => {
+    if (!token) return;
+    const link = `${window.location.origin}/?token=${token}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="mt-1 text-muted-foreground">Configure your budget tracker</p>
+        <p className="mt-1 text-muted-foreground">
+          Configure your budget tracker
+        </p>
       </div>
 
       <div className="max-w-lg space-y-4">
         <Card className="border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Month Start Date</CardTitle>
+            <CardTitle className="text-sm">Month Start Date</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -26,13 +62,102 @@ export function SettingsPage() {
                 min={1}
                 max={28}
                 value={monthStartDay}
-                onChange={(e) => setMonthStartDay(parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  setMonthStartDay(parseInt(e.target.value) || 1)
+                }
                 className="h-11 w-32 text-base"
               />
               <p className="text-xs text-muted-foreground">
-                Budget periods run from day {monthStartDay} of each month to day {monthStartDay - 1 || 28} of the next.
+                Budget periods run from day {monthStartDay} of each month to day{" "}
+                {monthStartDay - 1 || 28} of the next.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Cloud Sync</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              {local ? (
+                <>
+                  <CloudOff className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    Local mode — sync disabled on localhost
+                  </span>
+                </>
+              ) : token ? (
+                <>
+                  <Cloud className="h-4 w-4 text-primary" />
+                  <span className="text-primary">
+                    Connected — syncing to cloud
+                  </span>
+                </>
+              ) : (
+                <>
+                  <CloudOff className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Not connected</span>
+                </>
+              )}
+            </div>
+
+            {!local && token && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-9"
+                  onClick={handleForceSync}
+                  disabled={syncing}
+                >
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
+                  />
+                  Push to cloud
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-9"
+                  onClick={handleForcePull}
+                  disabled={syncing}
+                >
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
+                  />
+                  Pull from cloud
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-9"
+                  onClick={handleCopyLink}
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                  {copied ? "Copied!" : "Copy access link"}
+                </Button>
+              </div>
+            )}
+
+            {!local && token && (
+              <div className="pt-2 border-t border-border/50">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 h-9 text-destructive hover:text-destructive"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign out
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
