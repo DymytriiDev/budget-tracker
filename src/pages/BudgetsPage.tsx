@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
@@ -18,6 +18,27 @@ export function BudgetsPage() {
   const { budgets, setBudget } = useBudgetStore();
   const { expenses } = useExpenseStore();
   const [localLimits, setLocalLimits] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [shakingField, setShakingField] = useState<string | null>(null);
+
+  const clearFieldError = useCallback((id: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[id]) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
+  const handleLimitChange = (catId: string, value: string) => {
+    // Allow only digits and one decimal point
+    const cleaned = value.replace(/[^0-9.]/g, "");
+    const parts = cleaned.split(".");
+    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
+    if (parts.length === 2 && parts[1].length > 2) return;
+    setLocalLimits((prev) => ({ ...prev, [catId]: formatted }));
+    clearFieldError(catId);
+  };
 
   const monthBudgets = useMemo(
     () => budgets.filter((b) => b.month === month),
@@ -50,15 +71,21 @@ export function BudgetsPage() {
   };
 
   const handleSave = (categoryId: string) => {
-    const val = parseFloat(getLimitForCategory(categoryId));
-    if (!isNaN(val) && val > 0) {
-      setBudget(categoryId, month, val);
-      setLocalLimits((prev) => {
-        const next = { ...prev };
-        delete next[categoryId];
-        return next;
-      });
+    const raw = getLimitForCategory(categoryId);
+    const val = parseFloat(raw);
+    if (!raw.trim() || isNaN(val) || val <= 0) {
+      setFieldErrors((prev) => ({ ...prev, [categoryId]: "Enter a valid amount" }));
+      setShakingField(categoryId);
+      setTimeout(() => setShakingField(null), 400);
+      return;
     }
+    setBudget(categoryId, month, val);
+    setLocalLimits((prev) => {
+      const next = { ...prev };
+      delete next[categoryId];
+      return next;
+    });
+    clearFieldError(categoryId);
   };
 
   const totalBudget = monthBudgets.reduce((sum, b) => sum + b.limit, 0);
@@ -211,23 +238,25 @@ export function BudgetsPage() {
                       )}
                     </div>
                     {/* Desktop inline input */}
-                    <div className="hidden items-center gap-2 sm:flex">
-                      <Input
-                        type="number"
-                        placeholder="Limit"
-                        className="w-28 h-10 text-base"
-                        value={getLimitForCategory(cat.id)}
-                        onChange={(e) =>
-                          setLocalLimits((prev) => ({
-                            ...prev,
-                            [cat.id]: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && handleSave(cat.id)
-                        }
-                        aria-label={`Budget limit for ${cat.name}`}
-                      />
+                    <div className={`hidden items-center gap-2 sm:flex ${shakingField === cat.id ? "animate-shake" : ""}`}>
+                      <div className={fieldErrors[cat.id] ? "field-error" : ""}>
+                        <div className="relative">
+                          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            pattern="[0-9]*[.,]?[0-9]*"
+                            placeholder="0.00"
+                            className="w-28 h-10 text-base pl-7 tabular-nums"
+                            value={getLimitForCategory(cat.id)}
+                            onChange={(e) => handleLimitChange(cat.id, e.target.value)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && handleSave(cat.id)
+                            }
+                            aria-label={`Budget limit for ${cat.name}`}
+                          />
+                        </div>
+                      </div>
                       {changed && (
                         <Button
                           variant="outline"
@@ -242,32 +271,37 @@ export function BudgetsPage() {
                     </div>
                   </div>
                   {/* Mobile stacked input */}
-                  <div className="mt-2 flex items-center gap-2 sm:hidden">
-                    <Input
-                      type="number"
-                      placeholder="Set limit"
-                      className="flex-1 h-10 text-base"
-                      value={getLimitForCategory(cat.id)}
-                      onChange={(e) =>
-                        setLocalLimits((prev) => ({
-                          ...prev,
-                          [cat.id]: e.target.value,
-                        }))
-                      }
-                      onKeyDown={(e) => e.key === "Enter" && handleSave(cat.id)}
-                      aria-label={`Budget limit for ${cat.name}`}
-                    />
-                    {changed && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10"
-                        onClick={() => handleSave(cat.id)}
-                        aria-label={`Save budget for ${cat.name}`}
-                      >
-                        <Save className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div className={`mt-2 sm:hidden ${shakingField === cat.id ? "animate-shake" : ""}`}>
+                    <div className={`flex items-center gap-2 ${fieldErrors[cat.id] ? "field-error" : ""}`}>
+                      <div className="relative flex-1">
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*[.,]?[0-9]*"
+                          placeholder="0.00"
+                          className="flex-1 h-10 text-base pl-7 tabular-nums"
+                          value={getLimitForCategory(cat.id)}
+                          onChange={(e) => handleLimitChange(cat.id, e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleSave(cat.id)}
+                          aria-label={`Budget limit for ${cat.name}`}
+                        />
+                      </div>
+                      {changed && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10"
+                          onClick={() => handleSave(cat.id)}
+                          aria-label={`Save budget for ${cat.name}`}
+                        >
+                          <Save className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="field-error-msg" data-visible={!!fieldErrors[cat.id]}>
+                      <span className="text-xs text-destructive pt-0.5">{fieldErrors[cat.id]}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

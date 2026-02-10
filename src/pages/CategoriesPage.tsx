@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import {
   DndContext,
@@ -136,6 +136,17 @@ export function CategoriesPage() {
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("Tag");
   const [color, setColor] = useState(COLORS[0]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [shaking, setShaking] = useState(false);
+
+  const clearError = useCallback((field: string) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -158,6 +169,7 @@ export function CategoriesPage() {
     setName("");
     setIcon("Tag");
     setColor(COLORS[0]);
+    setErrors({});
     setDialogOpen(true);
   };
 
@@ -166,11 +178,21 @@ export function CategoriesPage() {
     setName(cat.name);
     setIcon(cat.icon);
     setColor(cat.color);
+    setErrors({});
     setDialogOpen(true);
   };
 
   const handleSave = () => {
-    if (!name.trim()) return;
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = "Category name is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setShaking(true);
+      setTimeout(() => setShaking(false), 400);
+      return;
+    }
+
     if (editing) {
       updateCategory(editing.id, { name, icon, color });
     } else {
@@ -226,15 +248,18 @@ export function CategoriesPage() {
               {editing ? "Edit Category" : "New Category"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className={`space-y-4 py-4 ${shaking ? "animate-shake" : ""}`}>
+            <div className={`space-y-2 ${errors.name ? "field-error" : ""}`}>
               <Label>Name</Label>
               <Input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => { setName(e.target.value); clearError("name"); }}
                 placeholder="Category name"
                 className="h-11 text-base"
               />
+              <div className="field-error-msg" data-visible={!!errors.name}>
+                <span className="text-xs text-destructive pt-0.5">{errors.name}</span>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Icon</Label>

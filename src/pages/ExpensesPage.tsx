@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Plus, Trash2, ArrowUpDown, Search } from "lucide-react";
 import { format } from "date-fns";
 import { useCategoryStore } from "@/stores/categoryStore";
@@ -54,6 +54,18 @@ export function ExpensesPage() {
   const [formDesc, setFormDesc] = useState("");
   const [formAmount, setFormAmount] = useState("");
   const [formCategory, setFormCategory] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [shaking, setShaking] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  const clearError = useCallback((field: string) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }, []);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -93,6 +105,7 @@ export function ExpensesPage() {
     setFormDesc("");
     setFormAmount("");
     setFormCategory(categories[0]?.id || "");
+    setErrors({});
     setDialogOpen(true);
   };
 
@@ -102,13 +115,25 @@ export function ExpensesPage() {
     setFormDesc(exp.description);
     setFormAmount(String(exp.amount));
     setFormCategory(exp.categoryId);
+    setErrors({});
     setDialogOpen(true);
   };
 
   const handleSave = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formDate) newErrors.date = "Date is required";
+    if (!formDesc.trim()) newErrors.desc = "Description is required";
     const amount = parseFloat(formAmount);
-    if (!formDesc.trim() || isNaN(amount) || amount <= 0 || !formCategory)
+    if (!formAmount.trim()) newErrors.amount = "Amount is required";
+    else if (isNaN(amount) || amount <= 0) newErrors.amount = "Enter a valid amount";
+    if (!formCategory) newErrors.category = "Select a category";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setShaking(true);
+      setTimeout(() => setShaking(false), 400);
       return;
+    }
 
     if (editing) {
       updateExpense(editing.id, {
@@ -126,6 +151,18 @@ export function ExpensesPage() {
       });
     }
     setDialogOpen(false);
+  };
+
+  const handleAmountChange = (value: string) => {
+    // Allow only digits and one decimal point
+    const cleaned = value.replace(/[^0-9.]/g, "");
+    // Prevent multiple dots
+    const parts = cleaned.split(".");
+    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
+    // Limit to 2 decimal places
+    if (parts.length === 2 && parts[1].length > 2) return;
+    setFormAmount(formatted);
+    clearError("amount");
   };
 
   const getCat = (id: string) => categories.find((c) => c.id === id);
@@ -377,39 +414,52 @@ export function ExpensesPage() {
               {editing ? "Edit Expense" : "New Expense"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div ref={formRef} className={`space-y-4 py-4 ${shaking ? "animate-shake" : ""}`}>
+            <div className={`space-y-2 ${errors.date ? "field-error" : ""}`}>
               <Label>Date</Label>
               <Input
                 type="date"
                 className="h-11 text-base"
                 value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
+                onChange={(e) => { setFormDate(e.target.value); clearError("date"); }}
               />
+              <div className="field-error-msg" data-visible={!!errors.date}>
+                <span className="text-xs text-destructive pt-0.5">{errors.date}</span>
+              </div>
             </div>
-            <div className="space-y-2">
+            <div className={`space-y-2 ${errors.desc ? "field-error" : ""}`}>
               <Label>Description</Label>
               <Input
                 placeholder="What did you spend on?"
                 className="h-11 text-base"
                 value={formDesc}
-                onChange={(e) => setFormDesc(e.target.value)}
+                onChange={(e) => { setFormDesc(e.target.value); clearError("desc"); }}
               />
+              <div className="field-error-msg" data-visible={!!errors.desc}>
+                <span className="text-xs text-destructive pt-0.5">{errors.desc}</span>
+              </div>
             </div>
-            <div className="space-y-2">
+            <div className={`space-y-2 ${errors.amount ? "field-error" : ""}`}>
               <Label>Amount (€)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="h-11 text-base"
-                value={formAmount}
-                onChange={(e) => setFormAmount(e.target.value)}
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">€</span>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
+                  placeholder="0.00"
+                  className="h-11 text-base pl-8 tabular-nums"
+                  value={formAmount}
+                  onChange={(e) => handleAmountChange(e.target.value)}
+                />
+              </div>
+              <div className="field-error-msg" data-visible={!!errors.amount}>
+                <span className="text-xs text-destructive pt-0.5">{errors.amount}</span>
+              </div>
             </div>
-            <div className="space-y-2">
+            <div className={`space-y-2 ${errors.category ? "field-error" : ""}`}>
               <Label>Category</Label>
-              <Select value={formCategory} onValueChange={setFormCategory}>
+              <Select value={formCategory} onValueChange={(v) => { setFormCategory(v); clearError("category"); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -430,6 +480,9 @@ export function ExpensesPage() {
                   })}
                 </SelectContent>
               </Select>
+              <div className="field-error-msg" data-visible={!!errors.category}>
+                <span className="text-xs text-destructive pt-0.5">{errors.category}</span>
+              </div>
             </div>
           </div>
           <DialogFooter>

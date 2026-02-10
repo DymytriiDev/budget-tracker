@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Cloud, CloudOff, LogOut, RefreshCw, Copy, Check } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,25 @@ export function SettingsPage() {
   const local = isLocalDev();
   const [syncing, setSyncing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [dayError, setDayError] = useState("");
+  const [shaking, setShaking] = useState(false);
+
+  const handleDayChange = useCallback((value: string) => {
+    const num = parseInt(value);
+    if (value === "") {
+      setMonthStartDay(1);
+      setDayError("");
+      return;
+    }
+    if (isNaN(num) || num < 1 || num > 28) {
+      setDayError("Must be between 1 and 28");
+      setShaking(true);
+      setTimeout(() => setShaking(false), 400);
+      return;
+    }
+    setDayError("");
+    setMonthStartDay(num);
+  }, [setMonthStartDay]);
 
   const handleForceSync = async () => {
     setSyncing(true);
@@ -55,19 +74,22 @@ export function SettingsPage() {
             <CardTitle className="text-sm">Month Start Date</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className={`space-y-2 ${shaking ? "animate-shake" : ""}`}>
               <Label>Day of the month your budget cycle begins</Label>
-              <Input
-                type="number"
-                min={1}
-                max={28}
-                value={monthStartDay}
-                onChange={(e) =>
-                  setMonthStartDay(parseInt(e.target.value) || 1)
-                }
-                className="h-11 w-32 text-base"
-                aria-label="Month start day"
-              />
+              <div className={dayError ? "field-error" : ""}>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={monthStartDay}
+                  onChange={(e) => handleDayChange(e.target.value)}
+                  className="h-11 w-32 text-base tabular-nums"
+                  aria-label="Month start day"
+                />
+              </div>
+              <div className="field-error-msg" data-visible={!!dayError}>
+                <span className="text-xs text-destructive pt-0.5">{dayError}</span>
+              </div>
               <p className="text-xs text-muted-foreground">
                 Budget periods run from day {monthStartDay} of each month to day{" "}
                 {monthStartDay - 1 || 28} of the next.
