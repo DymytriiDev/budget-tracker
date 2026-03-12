@@ -44,18 +44,30 @@ export async function fetchRemoteState(): Promise<AppState | null> {
 
 export async function pushRemoteState(): Promise<boolean> {
   const token = getAuthToken();
-  if (!token) return false;
+  if (!token) {
+    console.warn('[Sync] No auth token, skipping push');
+    return false;
+  }
   try {
+    console.log('[Sync] Pushing state to remote...');
+    const state = collectState();
+    console.log('[Sync] State to push:', state);
     const res = await fetch('/api/sync', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(collectState()),
+      body: JSON.stringify(state),
     });
+    console.log('[Sync] Push response:', res.status, res.ok);
+    if (!res.ok) {
+      const error = await res.text();
+      console.error('[Sync] Push failed:', error);
+    }
     return res.ok;
-  } catch {
+  } catch (err) {
+    console.error('[Sync] Push error:', err);
     return false;
   }
 }

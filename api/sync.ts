@@ -20,6 +20,11 @@ export default async function handler(req: any, res: any) {
     return unauthorized(res);
   }
 
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.error('BLOB_READ_WRITE_TOKEN is not set');
+    return res.status(500).json({ error: 'Server configuration error: BLOB_READ_WRITE_TOKEN missing' });
+  }
+
   if (req.method === 'GET') {
     try {
       const { blobs } = await list({ prefix: BLOB_KEY });
@@ -41,6 +46,7 @@ export default async function handler(req: any, res: any) {
         access: 'public',
         addRandomSuffix: false,
         contentType: 'application/json',
+        allowOverwrite: true,
       });
       return res.status(200).json({ ok: true });
     } catch (err) {
