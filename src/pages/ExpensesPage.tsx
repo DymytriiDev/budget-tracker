@@ -154,8 +154,10 @@ export function ExpensesPage() {
   };
 
   const handleAmountChange = (value: string) => {
+    // Replace comma with dot for normalization
+    const normalized = value.replace(",", ".");
     // Allow only digits and one decimal point
-    const cleaned = value.replace(/[^0-9.]/g, "");
+    const cleaned = normalized.replace(/[^0-9.]/g, "");
     // Prevent multiple dots
     const parts = cleaned.split(".");
     const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
