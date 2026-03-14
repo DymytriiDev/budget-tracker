@@ -122,7 +122,6 @@ export function ExpensesPage() {
   const handleSave = () => {
     const newErrors: Record<string, string> = {};
     if (!formDate) newErrors.date = "Date is required";
-    if (!formDesc.trim()) newErrors.desc = "Description is required";
     const amount = parseFloat(formAmount);
     if (!formAmount.trim()) newErrors.amount = "Amount is required";
     else if (isNaN(amount) || amount <= 0) newErrors.amount = "Enter a valid amount";
@@ -138,14 +137,14 @@ export function ExpensesPage() {
     if (editing) {
       updateExpense(editing.id, {
         date: formDate,
-        description: formDesc,
+        description: formDesc.trim(),
         amount,
         categoryId: formCategory,
       });
     } else {
       addExpense({
         date: formDate,
-        description: formDesc,
+        description: formDesc.trim(),
         amount,
         categoryId: formCategory,
       });
@@ -252,7 +251,7 @@ export function ExpensesPage() {
                     onClick={() => openEdit(exp)}
                     onKeyDown={(e) => e.key === "Enter" && openEdit(exp)}
                     tabIndex={0}
-                    aria-label={`${exp.description}, ${formatCurrency(exp.amount)}, ${format(new Date(exp.date), "MMM dd, yyyy")}`}
+                    aria-label={`${exp.description || cat?.name || 'Expense'}, ${formatCurrency(exp.amount)}, ${format(new Date(exp.date), "MMM dd, yyyy")}`}
                   >
                     {cat && (
                       <div
@@ -268,7 +267,7 @@ export function ExpensesPage() {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
-                        {exp.description}
+                        {exp.description || (cat ? cat.name : "Expense")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(exp.date), "MMM dd, yyyy")}
@@ -287,7 +286,7 @@ export function ExpensesPage() {
                           e.stopPropagation();
                           deleteExpense(exp.id);
                         }}
-                        aria-label={`Delete ${exp.description}`}
+                        aria-label={`Delete ${exp.description || 'expense'}`}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -366,7 +365,7 @@ export function ExpensesPage() {
                           {format(new Date(exp.date), "MMM dd, yyyy")}
                         </TableCell>
                         <TableCell className="font-medium">
-                          {exp.description}
+                          {exp.description || <span className="text-muted-foreground italic">{cat?.name || "No description"}</span>}
                         </TableCell>
                         <TableCell>
                           {cat && (
@@ -393,7 +392,7 @@ export function ExpensesPage() {
                                 e.stopPropagation();
                                 deleteExpense(exp.id);
                               }}
-                              aria-label={`Delete ${exp.description}`}
+                              aria-label={`Delete ${exp.description || 'expense'}`}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
