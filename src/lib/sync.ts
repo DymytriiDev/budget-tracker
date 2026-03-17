@@ -92,7 +92,7 @@ function debouncedPush() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     pushRemoteState();
-  }, 1000);
+  }, 500);
 }
 
 let unsubscribers: (() => void)[] = [];
