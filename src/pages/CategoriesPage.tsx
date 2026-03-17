@@ -96,9 +96,9 @@ function SortableCategoryCard({
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{cat.name}</p>
-            {cat.description && (
-              <p className="text-xs text-muted-foreground line-clamp-3">{cat.description}</p>
-            )}
+            <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+              {cat.description || "\u00A0"}
+            </p>
           </div>
           <div className="flex gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
             <Button
