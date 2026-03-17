@@ -6,6 +6,7 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { useBudgetStore } from "@/stores/budgetStore";
 import { useExpenseStore } from "@/stores/expenseStore";
 import { useOwnerStore } from "@/stores/ownerStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,10 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
+import { getBudgetCycleMonth, isExpenseInCycle } from "@/lib/budgetCycle";
 
 export function BudgetsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const month = format(currentDate, "yyyy-MM");
+  const { monthStartDay } = useSettingsStore();
+  const month = getBudgetCycleMonth(currentDate, monthStartDay);
   const { categories } = useCategoryStore();
   const { budgets, setBudget } = useBudgetStore();
   const { expenses } = useExpenseStore();
@@ -62,8 +65,8 @@ export function BudgetsPage() {
   );
 
   const monthExpenses = useMemo(
-    () => expenses.filter((e) => e.date.startsWith(month)),
-    [expenses, month],
+    () => expenses.filter((e) => isExpenseInCycle(e.date, month, monthStartDay)),
+    [expenses, month, monthStartDay],
   );
 
   const getSpentForCategory = (categoryId: string) =>

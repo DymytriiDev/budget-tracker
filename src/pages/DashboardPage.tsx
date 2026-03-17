@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   Maximize2,
 } from "lucide-react";
-import { format, addMonths, subMonths, startOfMonth } from "date-fns";
+import { format, addMonths, subMonths } from "date-fns";
 import {
   BarChart,
   Bar,
@@ -29,6 +29,7 @@ import {
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useBudgetStore } from "@/stores/budgetStore";
 import { useExpenseStore } from "@/stores/expenseStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -39,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
+import { getBudgetCycleMonth, getLast6BudgetCycles, isExpenseInCycle } from "@/lib/budgetCycle";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -65,7 +67,8 @@ const chartVariants = {
 export function DashboardPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [fullscreenChart, setFullscreenChart] = useState<string | null>(null);
-  const month = format(currentDate, "yyyy-MM");
+  const { monthStartDay } = useSettingsStore();
+  const month = getBudgetCycleMonth(currentDate, monthStartDay);
   const { categories } = useCategoryStore();
   const { budgets } = useBudgetStore();
   const { expenses } = useExpenseStore();
@@ -75,8 +78,8 @@ export function DashboardPage() {
     [budgets, month],
   );
   const monthExpenses = useMemo(
-    () => expenses.filter((e) => e.date.startsWith(month)),
-    [expenses, month],
+    () => expenses.filter((e) => isExpenseInCycle(e.date, month, monthStartDay)),
+    [expenses, month, monthStartDay],
   );
 
   const totalBudget = monthBudgets.reduce((s, b) => s + b.limit, 0);
@@ -115,24 +118,19 @@ export function DashboardPage() {
   }, [categories, monthExpenses]);
 
   const trendData = useMemo(() => {
-    const months: { month: string; label: string }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = subMonths(startOfMonth(currentDate), i);
-      months.push({
-        month: format(d, "yyyy-MM"),
-        label: format(d, "MMM"),
-      });
-    }
-    return months.map((m) => {
+    const cycles = getLast6BudgetCycles(currentDate, monthStartDay);
+    return cycles.map((cycleMonth) => {
       const spent = expenses
-        .filter((e) => e.date.startsWith(m.month))
+        .filter((e) => isExpenseInCycle(e.date, cycleMonth, monthStartDay))
         .reduce((s, e) => s + e.amount, 0);
       const budgetTotal = budgets
-        .filter((b) => b.month === m.month)
+        .filter((b) => b.month === cycleMonth)
         .reduce((s, b) => s + b.limit, 0);
-      return { name: m.label, spent, budget: budgetTotal };
+      const [monthNum] = cycleMonth.split('-').map(Number);
+      const label = format(new Date(2024, monthNum - 1, 1), "MMM");
+      return { name: label, spent, budget: budgetTotal };
     });
-  }, [currentDate, expenses, budgets]);
+  }, [currentDate, expenses, budgets, monthStartDay]);
 
   const topCategories = useMemo(() => {
     return categories
