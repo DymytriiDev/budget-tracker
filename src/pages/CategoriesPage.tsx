@@ -77,8 +77,8 @@ function SortableCategoryCard({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="group relative overflow-hidden border-border/50 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
-        <CardContent className="flex items-center gap-3 p-3">
+      <Card className="group relative overflow-hidden border-border/50 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 h-[120px]">
+        <CardContent className="flex items-center gap-3 p-3 h-full">
           <button
             {...attributes}
             {...listeners}
@@ -94,11 +94,13 @@ function SortableCategoryCard({
           >
             <Icon className="h-5 w-5" style={{ color: cat.color }} />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className={`min-w-0 flex-1 flex flex-col ${cat.description ? "justify-start" : "justify-center"}`}>
             <p className="truncate text-sm font-semibold">{cat.name}</p>
-            <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]">
-              {cat.description || "\u00A0"}
-            </p>
+            {cat.description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {cat.description}
+              </p>
+            )}
           </div>
           <div className="flex gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
             <Button
