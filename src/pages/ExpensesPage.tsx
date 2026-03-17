@@ -3,6 +3,7 @@ import { Plus, Trash2, ArrowUpDown, Search } from "lucide-react";
 import { format } from "date-fns";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useExpenseStore } from "@/stores/expenseStore";
+import { useOwnerStore } from "@/stores/ownerStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -41,11 +42,13 @@ export function ExpensesPage() {
   const { categories } = useCategoryStore();
   const { expenses, addExpense, updateExpense, deleteExpense } =
     useExpenseStore();
+  const { owners } = useOwnerStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterOwner, setFilterOwner] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -88,6 +91,14 @@ export function ExpensesPage() {
       result = result.filter((e) => e.categoryId === filterCategory);
     }
 
+    if (filterOwner && filterOwner !== "all") {
+      if (filterOwner === "none") {
+        result = result.filter((e) => !e.ownerId);
+      } else {
+        result = result.filter((e) => e.ownerId === filterOwner);
+      }
+    }
+
     result.sort((a, b) => {
       let cmp = 0;
       if (sortField === "date") cmp = a.date.localeCompare(b.date);
@@ -97,7 +108,7 @@ export function ExpensesPage() {
     });
 
     return result;
-  }, [expenses, search, filterCategory, sortField, sortDir]);
+  }, [expenses, search, filterCategory, filterOwner, sortField, sortDir]);
 
   const openNew = () => {
     setEditing(null);
@@ -203,10 +214,10 @@ export function ExpensesPage() {
                 aria-label="Search expenses"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger
-                  className="w-full sm:w-48"
+                  className="w-full sm:w-40"
                   aria-label="Filter by category"
                 >
                   <SelectValue placeholder="All categories" />
@@ -216,6 +227,23 @@ export function ExpensesPage() {
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filterOwner} onValueChange={setFilterOwner}>
+                <SelectTrigger
+                  className="w-full sm:w-40"
+                  aria-label="Filter by owner"
+                >
+                  <SelectValue placeholder="All owners" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All owners</SelectItem>
+                  <SelectItem value="none">No owner</SelectItem>
+                  {owners.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id}>
+                      {owner.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

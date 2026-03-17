@@ -5,6 +5,7 @@ import {
   Receipt,
   FolderOpen,
   Target,
+  Users,
   Settings,
   DollarSign,
   Menu,
@@ -18,6 +19,7 @@ const navItems = [
   { to: "/expenses", label: "Expenses", icon: Receipt },
   { to: "/categories", label: "Categories", icon: FolderOpen },
   { to: "/budgets", label: "Budgets", icon: Target },
+  { to: "/owners", label: "Owners", icon: Users },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

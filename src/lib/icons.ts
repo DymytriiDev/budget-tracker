@@ -26,6 +26,11 @@ import {
   Landmark,
   Receipt,
   Tag,
+  ShoppingCart,
+  Lightbulb,
+  Train,
+  Shirt,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -57,6 +62,11 @@ export const AVAILABLE_ICONS: Record<string, LucideIcon> = {
   Landmark,
   Receipt,
   Tag,
+  ShoppingCart,
+  Lightbulb,
+  Train,
+  Shirt,
+  Wrench,
 };
 
 export function getIcon(name: string): LucideIcon {

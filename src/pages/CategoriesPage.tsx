@@ -95,7 +95,9 @@ function SortableCategoryCard({
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{cat.name}</p>
-            <p className="text-xs text-muted-foreground">{cat.icon}</p>
+            {cat.description && (
+              <p className="text-xs text-muted-foreground truncate">{cat.description}</p>
+            )}
           </div>
           <div className="flex gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
             <Button
@@ -134,6 +136,7 @@ export function CategoriesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("Tag");
   const [color, setColor] = useState(COLORS[0]);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -167,6 +170,7 @@ export function CategoriesPage() {
   const openNew = () => {
     setEditing(null);
     setName("");
+    setDescription("");
     setIcon("Tag");
     setColor(COLORS[0]);
     setErrors({});
@@ -176,6 +180,7 @@ export function CategoriesPage() {
   const openEdit = (cat: Category) => {
     setEditing(cat);
     setName(cat.name);
+    setDescription(cat.description || "");
     setIcon(cat.icon);
     setColor(cat.color);
     setErrors({});
@@ -194,9 +199,9 @@ export function CategoriesPage() {
     }
 
     if (editing) {
-      updateCategory(editing.id, { name, icon, color });
+      updateCategory(editing.id, { name, description: description || undefined, icon, color });
     } else {
-      addCategory({ name, icon, color });
+      addCategory({ name, description: description || undefined, icon, color });
     }
     setDialogOpen(false);
   };
@@ -248,7 +253,7 @@ export function CategoriesPage() {
               {editing ? "Edit Category" : "New Category"}
             </DialogTitle>
           </DialogHeader>
-          <div className={`space-y-4 py-4 ${shaking ? "animate-shake" : ""}`}>
+          <div className={`space-y-4 py-2 ${shaking ? "animate-shake" : ""}`}>
             <div className={`space-y-2 ${errors.name ? "field-error" : ""}`}>
               <Label>Name</Label>
               <Input
@@ -260,6 +265,15 @@ export function CategoriesPage() {
               <div className="field-error-msg" data-visible={!!errors.name}>
                 <span className="text-xs text-destructive pt-0.5">{errors.name}</span>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Description (optional)</Label>
+              <Input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description"
+                className="h-11 text-base"
+              />
             </div>
             <div className="space-y-2">
               <Label>Icon</Label>

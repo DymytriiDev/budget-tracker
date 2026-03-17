@@ -5,6 +5,7 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { ExpensesPage } from "@/pages/ExpensesPage";
 import { CategoriesPage } from "@/pages/CategoriesPage";
 import { BudgetsPage } from "@/pages/BudgetsPage";
+import { OwnersPage } from "@/pages/OwnersPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/expenses" element={<ExpensesPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/budgets" element={<BudgetsPage />} />
+            <Route path="/owners" element={<OwnersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>

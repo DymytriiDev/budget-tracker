@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   icon: string; // Lucide icon name
   color: string; // hex color for charts
+  description?: string; // Optional description
 }
 
 export interface Budget {
@@ -10,6 +11,8 @@ export interface Budget {
   categoryId: string;
   month: string; // YYYY-MM format
   limit: number;
+  ownerId?: string; // Optional owner ID
+  ownerSplits?: { ownerId: string; limit: number }[]; // Optional split by owners
 }
 
 export interface Expense {
@@ -18,4 +21,11 @@ export interface Expense {
   date: string; // ISO date string
   description: string;
   amount: number;
+  ownerId?: string; // Optional owner ID
+}
+
+export interface Owner {
+  id: string;
+  name: string;
+  color: string; // hex color for UI
 }

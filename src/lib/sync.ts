@@ -2,12 +2,14 @@ import { getAuthToken } from './auth';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { useExpenseStore } from '@/stores/expenseStore';
+import { useOwnerStore } from '@/stores/ownerStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 interface AppState {
-  categories: { id: string; name: string; icon: string; color: string }[];
-  expenses: { id: string; categoryId: string; date: string; description: string; amount: number }[];
-  budgets: { id: string; categoryId: string; month: string; limit: number }[];
+  categories: { id: string; name: string; icon: string; color: string; description?: string }[];
+  expenses: { id: string; categoryId: string; date: string; description: string; amount: number; ownerId?: string }[];
+  budgets: { id: string; categoryId: string; month: string; limit: number; ownerId?: string; ownerSplits?: { ownerId: string; limit: number }[] }[];
+  owners: { id: string; name: string; color: string }[];
   settings: { monthStartDay: number };
 }
 
@@ -16,6 +18,7 @@ function collectState(): AppState {
     categories: useCategoryStore.getState().categories,
     expenses: useExpenseStore.getState().expenses,
     budgets: useBudgetStore.getState().budgets,
+    owners: useOwnerStore.getState().owners,
     settings: { monthStartDay: useSettingsStore.getState().monthStartDay },
   };
 }
@@ -24,6 +27,7 @@ function applyState(state: AppState) {
   if (state.categories) useCategoryStore.setState({ categories: state.categories });
   if (state.expenses) useExpenseStore.setState({ expenses: state.expenses });
   if (state.budgets) useBudgetStore.setState({ budgets: state.budgets });
+  if (state.owners) useOwnerStore.setState({ owners: state.owners });
   if (state.settings) useSettingsStore.setState({ monthStartDay: state.settings.monthStartDay });
 }
 
@@ -88,7 +92,7 @@ function debouncedPush() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     pushRemoteState();
-  }, 1500);
+  }, 1000);
 }
 
 let unsubscribers: (() => void)[] = [];
@@ -99,6 +103,7 @@ export function startSyncListeners() {
     useCategoryStore.subscribe(() => debouncedPush()),
     useExpenseStore.subscribe(() => debouncedPush()),
     useBudgetStore.subscribe(() => debouncedPush()),
+    useOwnerStore.subscribe(() => debouncedPush()),
     useSettingsStore.subscribe(() => debouncedPush()),
   ];
 }
