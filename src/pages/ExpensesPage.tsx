@@ -57,7 +57,8 @@ export function ExpensesPage() {
   const [formDesc, setFormDesc] = useState("");
   const [formAmount, setFormAmount] = useState("");
   const [formCategory, setFormCategory] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formOwner, setFormOwner] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({}); 
   const [shaking, setShaking] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -116,6 +117,7 @@ export function ExpensesPage() {
     setFormDesc("");
     setFormAmount("");
     setFormCategory(categories[0]?.id || "");
+    setFormOwner("");
     setErrors({});
     setDialogOpen(true);
   };
@@ -126,6 +128,7 @@ export function ExpensesPage() {
     setFormDesc(exp.description);
     setFormAmount(String(exp.amount));
     setFormCategory(exp.categoryId);
+    setFormOwner(exp.ownerId || "");
     setErrors({});
     setDialogOpen(true);
   };
@@ -151,6 +154,7 @@ export function ExpensesPage() {
         description: formDesc.trim(),
         amount,
         categoryId: formCategory,
+        ownerId: formOwner || undefined,
       });
     } else {
       addExpense({
@@ -158,6 +162,7 @@ export function ExpensesPage() {
         description: formDesc.trim(),
         amount,
         categoryId: formCategory,
+        ownerId: formOwner || undefined,
       });
     }
     setDialogOpen(false);
@@ -512,6 +517,22 @@ export function ExpensesPage() {
               <div className="field-error-msg" data-visible={!!errors.category}>
                 <span className="text-xs text-destructive pt-0.5">{errors.category}</span>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Owner (optional)</Label>
+              <Select value={formOwner} onValueChange={setFormOwner}>
+                <SelectTrigger>
+                  <SelectValue placeholder="No owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No owner</SelectItem>
+                  {owners.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id}>
+                      {owner.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
