@@ -77,8 +77,8 @@ function SortableCategoryCard({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="group relative overflow-hidden border-border/50 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 h-[120px]">
-        <CardContent className="flex items-center gap-3 p-3 h-full">
+      <Card className="group relative overflow-hidden border-border/50 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 h-[100px]">
+        <CardContent className="flex items-center gap-2 px-3 h-full">
           <button
             {...attributes}
             {...listeners}
