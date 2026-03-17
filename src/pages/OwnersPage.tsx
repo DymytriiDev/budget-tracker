@@ -16,18 +16,19 @@ import { cn } from "@/lib/utils";
 import type { Owner } from "@/types";
 
 const COLORS = [
-  "#22c55e",
-  "#3b82f6",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ec4899",
   "#ef4444",
-  "#06b6d4",
   "#f97316",
-  "#14b8a6",
-  "#a855f7",
-  "#e11d48",
+  "#f59e0b",
+  "#eab308",
   "#84cc16",
+  "#22c55e",
+  "#14b8a6",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#a855f7",
+  "#ec4899",
+  "#e11d48",
 ];
 
 function OwnerCard({
