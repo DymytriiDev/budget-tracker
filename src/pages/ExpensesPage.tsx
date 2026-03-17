@@ -520,12 +520,12 @@ export function ExpensesPage() {
             </div>
             <div className="space-y-2">
               <Label>Owner (optional)</Label>
-              <Select value={formOwner} onValueChange={setFormOwner}>
+              <Select value={formOwner || "none"} onValueChange={(v) => setFormOwner(v === "none" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="No owner" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No owner</SelectItem>
+                  <SelectItem value="none">No owner</SelectItem>
                   {owners.map((owner) => (
                     <SelectItem key={owner.id} value={owner.id}>
                       {owner.name}
