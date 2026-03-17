@@ -88,8 +88,18 @@ export function BudgetsPage() {
 
   const handleSave = (categoryId: string) => {
     const raw = getLimitForCategory(categoryId);
+    if (!raw.trim()) {
+      setBudget(categoryId, month, 0);
+      setLocalLimits((prev) => {
+        const next = { ...prev };
+        delete next[categoryId];
+        return next;
+      });
+      clearFieldError(categoryId);
+      return;
+    }
     const val = parseFloat(raw);
-    if (!raw.trim() || isNaN(val) || val <= 0) {
+    if (isNaN(val) || val <= 0) {
       setFieldErrors((prev) => ({ ...prev, [categoryId]: "Enter a valid amount" }));
       setShakingField(categoryId);
       setTimeout(() => setShakingField(null), 400);
@@ -258,7 +268,7 @@ export function BudgetsPage() {
         </motion.div>
       </div>
 
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {categories.map((cat, i) => {
           const Icon = getIcon(cat.icon);
           const spent = getSpentForCategory(cat.id);
