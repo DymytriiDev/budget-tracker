@@ -7,10 +7,12 @@ import { CategoriesPage } from "@/pages/CategoriesPage";
 import { BudgetsPage } from "@/pages/BudgetsPage";
 import { OwnersPage } from "@/pages/OwnersPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster />
       <AuthGuard>
         <Routes>
           <Route element={<Layout />}>

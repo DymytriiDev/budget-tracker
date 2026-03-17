@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { getAuthToken } from './auth';
 import { useCategoryStore } from '@/stores/categoryStore';
 import { useBudgetStore } from '@/stores/budgetStore';
@@ -68,10 +69,14 @@ export async function pushRemoteState(): Promise<boolean> {
     if (!res.ok) {
       const error = await res.text();
       console.error('[Sync] Push failed:', error);
+      toast.error('Failed to save changes');
+      return false;
     }
-    return res.ok;
+    toast.success('Changes saved');
+    return true;
   } catch (err) {
     console.error('[Sync] Push error:', err);
+    toast.error('Error saving changes');
     return false;
   }
 }
@@ -92,7 +97,7 @@ function debouncedPush() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     pushRemoteState();
-  }, 500);
+  }, 1000);
 }
 
 let unsubscribers: (() => void)[] = [];
