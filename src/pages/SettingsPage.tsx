@@ -1,15 +1,24 @@
 import { useState, useCallback } from "react";
 import { Cloud, CloudOff, LogOut, RefreshCw, Copy, Check } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useOwnerStore } from "@/stores/ownerStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getAuthToken, clearAuthToken, isLocalDev } from "@/lib/auth";
 import { pushRemoteState, loadRemoteState } from "@/lib/sync";
 
 export function SettingsPage() {
-  const { monthStartDay, setMonthStartDay } = useSettingsStore();
+  const { monthStartDay, setMonthStartDay, defaultOwnerId, setDefaultOwnerId } = useSettingsStore();
+  const { owners } = useOwnerStore();
   const token = getAuthToken();
   const local = isLocalDev();
   const [syncing, setSyncing] = useState(false);
@@ -93,6 +102,32 @@ export function SettingsPage() {
               <p className="text-xs text-muted-foreground">
                 Budget periods run from day {monthStartDay} of each month to day{" "}
                 {monthStartDay - 1 || 28} of the next.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50 gap-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Default Owner</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Select value={defaultOwnerId || "none"} onValueChange={(v) => setDefaultOwnerId(v === "none" ? undefined : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="No default owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No default owner</SelectItem>
+                  {owners.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id}>
+                      {owner.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                When adding a new expense, the owner field will be pre-filled with your selected default owner.
               </p>
             </div>
           </CardContent>

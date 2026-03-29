@@ -1,4 +1,4 @@
-import { format, subMonths, parse } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 
 /**
  * Gets the budget cycle identifier for a given date and month start day.
@@ -47,7 +47,7 @@ export function isExpenseInCycle(
   cycleMonth: string,
   monthStartDay: number
 ): boolean {
-  const date = parse(expenseDate, 'yyyy-MM-dd', new Date());
+  const date = new Date(expenseDate);
   const cycle = getBudgetCycleMonth(date, monthStartDay);
   return cycle === cycleMonth;
 }

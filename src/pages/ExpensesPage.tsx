@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Trash2, ArrowUpDown, Search } from "lucide-react";
 import { format } from "date-fns";
 import { useCategoryStore } from "@/stores/categoryStore";
@@ -6,15 +6,8 @@ import { useExpenseStore } from "@/stores/expenseStore";
 import { useOwnerStore } from "@/stores/ownerStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { AddExpenseModal } from "@/components/AddExpenseModal";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,43 +26,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
-import type { Expense } from "@/types";
 
 type SortField = "date" | "amount" | "description";
 type SortDir = "asc" | "desc";
 
 export function ExpensesPage() {
   const { categories } = useCategoryStore();
-  const { expenses, addExpense, updateExpense, deleteExpense } =
-    useExpenseStore();
+  const { expenses, deleteExpense } = useExpenseStore();
   const { owners } = useOwnerStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-
-  // Form state
-  const [formDate, setFormDate] = useState("");
-  const [formDesc, setFormDesc] = useState("");
-  const [formAmount, setFormAmount] = useState("");
-  const [formCategory, setFormCategory] = useState("");
-  const [formOwner, setFormOwner] = useState<string>("");
-  const [errors, setErrors] = useState<Record<string, string>>({}); 
-  const [shaking, setShaking] = useState(false);
-  const formRef = useRef<HTMLDivElement>(null);
-
-  const clearError = useCallback((field: string) => {
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  }, []);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -102,7 +74,7 @@ export function ExpensesPage() {
 
     result.sort((a, b) => {
       let cmp = 0;
-      if (sortField === "date") cmp = a.date.localeCompare(b.date);
+      if (sortField === "date") cmp = new Date(a.date).getTime() - new Date(b.date).getTime();
       else if (sortField === "amount") cmp = a.amount - b.amount;
       else cmp = a.description.localeCompare(b.description);
       return sortDir === "asc" ? cmp : -cmp;
@@ -112,74 +84,13 @@ export function ExpensesPage() {
   }, [expenses, search, filterCategory, filterOwner, sortField, sortDir]);
 
   const openNew = () => {
-    setEditing(null);
-    setFormDate(format(new Date(), "yyyy-MM-dd"));
-    setFormDesc("");
-    setFormAmount("");
-    setFormCategory(categories[0]?.id || "");
-    setFormOwner("");
-    setErrors({});
+    setEditingExpense(null);
     setDialogOpen(true);
   };
 
-  const openEdit = (exp: Expense) => {
-    setEditing(exp);
-    setFormDate(exp.date);
-    setFormDesc(exp.description);
-    setFormAmount(String(exp.amount));
-    setFormCategory(exp.categoryId);
-    setFormOwner(exp.ownerId || "");
-    setErrors({});
+  const openEdit = (exp: any) => {
+    setEditingExpense(exp);
     setDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formDate) newErrors.date = "Date is required";
-    const amount = parseFloat(formAmount);
-    if (!formAmount.trim()) newErrors.amount = "Amount is required";
-    else if (isNaN(amount) || amount <= 0) newErrors.amount = "Enter a valid amount";
-    if (!formCategory) newErrors.category = "Select a category";
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setShaking(true);
-      setTimeout(() => setShaking(false), 400);
-      return;
-    }
-
-    if (editing) {
-      updateExpense(editing.id, {
-        date: formDate,
-        description: formDesc.trim(),
-        amount,
-        categoryId: formCategory,
-        ownerId: formOwner || undefined,
-      });
-    } else {
-      addExpense({
-        date: formDate,
-        description: formDesc.trim(),
-        amount,
-        categoryId: formCategory,
-        ownerId: formOwner || undefined,
-      });
-    }
-    setDialogOpen(false);
-  };
-
-  const handleAmountChange = (value: string) => {
-    // Replace comma with dot for normalization
-    const normalized = value.replace(",", ".");
-    // Allow only digits and one decimal point
-    const cleaned = normalized.replace(/[^0-9.]/g, "");
-    // Prevent multiple dots
-    const parts = cleaned.split(".");
-    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
-    // Limit to 2 decimal places
-    if (parts.length === 2 && parts[1].length > 2) return;
-    setFormAmount(formatted);
-    clearError("amount");
   };
 
   const getCat = (id: string) => categories.find((c) => c.id === id);
@@ -280,7 +191,7 @@ export function ExpensesPage() {
                   <div
                     key={exp.id}
                     role="listitem"
-                    className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors active:bg-muted/50"
+                    className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors active:bg-muted/50 cursor-pointer"
                     onClick={() => openEdit(exp)}
                     onKeyDown={(e) => e.key === "Enter" && openEdit(exp)}
                     tabIndex={0}
@@ -303,7 +214,7 @@ export function ExpensesPage() {
                         {exp.description || (cat ? cat.name : "Expense")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(exp.date), "MMM dd, yyyy")}
+                        {format(new Date(exp.date), "MMM dd, yyyy HH:mm")}
                         {cat ? ` · ${cat.name}` : ""}
                       </p>
                     </div>
@@ -395,7 +306,7 @@ export function ExpensesPage() {
                         onClick={() => openEdit(exp)}
                       >
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(exp.date), "MMM dd, yyyy")}
+                          {format(new Date(exp.date), "MMM dd, yyyy HH:mm")}
                         </TableCell>
                         <TableCell className="font-medium">
                           {exp.description || <span className="text-muted-foreground italic">{cat?.name || "No description"}</span>}
@@ -441,108 +352,11 @@ export function ExpensesPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? "Edit Expense" : "New Expense"}
-            </DialogTitle>
-          </DialogHeader>
-          <div ref={formRef} className={`space-y-4 py-4 ${shaking ? "animate-shake" : ""}`}>
-            <div className={`space-y-2 ${errors.date ? "field-error" : ""}`}>
-              <Label>Date</Label>
-              <Input
-                type="date"
-                className="h-11 text-base"
-                value={formDate}
-                onChange={(e) => { setFormDate(e.target.value); clearError("date"); }}
-              />
-              <div className="field-error-msg" data-visible={!!errors.date}>
-                <span className="text-xs text-destructive pt-0.5">{errors.date}</span>
-              </div>
-            </div>
-            <div className={`space-y-2 ${errors.desc ? "field-error" : ""}`}>
-              <Label>Description</Label>
-              <Input
-                placeholder="What did you spend on?"
-                className="h-11 text-base"
-                value={formDesc}
-                onChange={(e) => { setFormDesc(e.target.value); clearError("desc"); }}
-              />
-              <div className="field-error-msg" data-visible={!!errors.desc}>
-                <span className="text-xs text-destructive pt-0.5">{errors.desc}</span>
-              </div>
-            </div>
-            <div className={`space-y-2 ${errors.amount ? "field-error" : ""}`}>
-              <Label>Amount (€)</Label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">€</span>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*[.,]?[0-9]*"
-                  placeholder="0.00"
-                  className="h-11 text-base pl-8 tabular-nums"
-                  value={formAmount}
-                  onChange={(e) => handleAmountChange(e.target.value)}
-                />
-              </div>
-              <div className="field-error-msg" data-visible={!!errors.amount}>
-                <span className="text-xs text-destructive pt-0.5">{errors.amount}</span>
-              </div>
-            </div>
-            <div className={`space-y-2 ${errors.category ? "field-error" : ""}`}>
-              <Label>Category</Label>
-              <Select value={formCategory} onValueChange={(v) => { setFormCategory(v); clearError("category"); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => {
-                    const Icon = getIcon(cat.icon);
-                    return (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        <div className="flex items-center gap-2">
-                          <Icon
-                            className="h-4 w-4"
-                            style={{ color: cat.color }}
-                          />
-                          {cat.name}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-              <div className="field-error-msg" data-visible={!!errors.category}>
-                <span className="text-xs text-destructive pt-0.5">{errors.category}</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Owner (optional)</Label>
-              <Select value={formOwner || "none"} onValueChange={(v) => setFormOwner(v === "none" ? "" : v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="No owner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No owner</SelectItem>
-                  {owners.map((owner) => (
-                    <SelectItem key={owner.id} value={owner.id}>
-                      {owner.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>{editing ? "Update" : "Add"}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddExpenseModal
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        expense={editingExpense}
+      />
     </div>
   );
 }

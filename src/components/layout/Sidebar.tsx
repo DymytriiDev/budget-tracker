@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import {
   LayoutDashboard,
@@ -130,8 +130,8 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
       {/* Mobile drawer */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-border bg-sidebar transition-transform duration-300 md:hidden",
-          open ? "translate-x-0" : "-translate-x-full",
+          "fixed right-0 top-0 z-50 flex h-screen w-72 flex-col border-l border-border bg-sidebar transition-transform duration-300 md:hidden",
+          open ? "translate-x-0" : "translate-x-full",
         )}
         role="navigation"
         aria-label="Main navigation"
@@ -144,7 +144,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
 
 export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
+    <header className="flex flex-row-reverse justify-between sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
       <Button
         variant="ghost"
         size="icon"
@@ -154,15 +154,15 @@ export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
       >
         <Menu className="h-5 w-5" />
       </Button>
-      <div className="flex items-center gap-2">
+      <Link to="/" className="flex items-center gap-2">
         <div
           className="flex h-7 w-7 items-center justify-center rounded-md bg-primary"
           aria-hidden="true"
         >
           <DollarSign className="h-4 w-4 text-primary-foreground" />
         </div>
-        <span className="text-sm font-bold">Budget</span>
-      </div>
+        <span className="text-lg font-bold">Budget</span>
+      </Link>
     </header>
   );
 }

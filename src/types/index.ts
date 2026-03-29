@@ -18,7 +18,7 @@ export interface Budget {
 export interface Expense {
   id: string;
   categoryId: string;
-  date: string; // ISO date string
+  date: string; // ISO datetime string (YYYY-MM-DDTHH:mm:ss.sssZ)
   description: string;
   amount: number;
   ownerId?: string; // Optional owner ID

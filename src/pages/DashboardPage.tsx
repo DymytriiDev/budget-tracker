@@ -1,5 +1,6 @@
 import { useState, useMemo, type ReactNode } from "react";
 import { motion } from "framer-motion";
+import { AddExpenseModal } from "@/components/AddExpenseModal";
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,6 +10,7 @@ import {
   Target,
   AlertTriangle,
   Maximize2,
+  Plus,
 } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import {
@@ -67,6 +69,7 @@ const chartVariants = {
 export function DashboardPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [fullscreenChart, setFullscreenChart] = useState<string | null>(null);
+  const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const { monthStartDay } = useSettingsStore();
   const month = getBudgetCycleMonth(currentDate, monthStartDay);
   const { categories } = useCategoryStore();
@@ -316,6 +319,17 @@ export function DashboardPage() {
 
   return (
     <div>
+      {/* Mobile CTA - visible only on small screens */}
+      <div className="mb-6 block sm:hidden">
+        <Button
+          onClick={() => setAddExpenseOpen(true)}
+          className="w-full h-20 text-2xl font-semibold bg-primary hover:bg-primary/90"
+        >
+          <Plus className="size-6" />
+          Add an Expense
+        </Button>
+      </div>
+
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold md:text-2xl">Dashboard</h1>
@@ -590,6 +604,11 @@ export function DashboardPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AddExpenseModal
+        open={addExpenseOpen}
+        onOpenChange={setAddExpenseOpen}
+      />
     </div>
   );
 }
