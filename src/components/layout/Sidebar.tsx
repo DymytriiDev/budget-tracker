@@ -67,7 +67,7 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           <DollarSign className="h-5 w-5 text-primary-foreground" />
         </div>
         <span className="text-lg font-bold text-sidebar-foreground">
-          BudgetTracker
+          Budget
         </span>
         <Button
           variant="ghost"
@@ -105,9 +105,6 @@ export function Sidebar({ open, onOpenChange }: SidebarProps) {
           </NavLink>
         ))}
       </nav>
-      <div className="border-t border-border p-4">
-        <p className="text-xs text-muted-foreground">© 2026 BudgetTracker</p>
-      </div>
     </>
   );
 
@@ -164,7 +161,7 @@ export function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
         >
           <DollarSign className="h-4 w-4 text-primary-foreground" />
         </div>
-        <span className="text-sm font-bold">BudgetTracker</span>
+        <span className="text-sm font-bold">Budget</span>
       </div>
     </header>
   );

@@ -56,7 +56,7 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
           >
             <DollarSign className="h-7 w-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-xl">BudgetTracker</CardTitle>
+          <CardTitle className="text-xl">Budget</CardTitle>
           <p className="text-sm text-muted-foreground">
             Enter your access code to continue
           </p>
