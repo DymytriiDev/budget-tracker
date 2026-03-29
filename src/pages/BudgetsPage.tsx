@@ -20,6 +20,7 @@ import { getIcon } from "@/lib/icons";
 import { formatCurrency, normalizeCurrencyInput } from "@/lib/currency";
 import { getBudgetCycleMonth, isExpenseInCycle } from "@/lib/budgetCycle";
 import { MonthNavigation } from "@/components/MonthNavigation";
+import { PageTransition } from "@/components/PageTransition";
 
 export function BudgetsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -168,6 +169,7 @@ export function BudgetsPage() {
   const totalSpent = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
+    <PageTransition>
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -424,5 +426,6 @@ export function BudgetsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageTransition>
   );
 }

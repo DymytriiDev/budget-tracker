@@ -28,6 +28,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { PageTransition } from "@/components/PageTransition";
 import { Label } from "@/components/ui/label";
 import { getIcon, AVAILABLE_ICONS } from "@/lib/icons";
 import { cn } from "@/lib/utils";
@@ -210,6 +211,7 @@ export function CategoriesPage() {
   };
 
   return (
+    <PageTransition>
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -333,5 +335,6 @@ export function CategoriesPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageTransition>
   );
 }

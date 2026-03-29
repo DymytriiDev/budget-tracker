@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getAuthToken, clearAuthToken, isLocalDev } from "@/lib/auth";
+import { PageTransition } from "@/components/PageTransition";
 import { pushRemoteState, loadRemoteState } from "@/lib/sync";
 
 export function SettingsPage() {
@@ -69,6 +70,7 @@ export function SettingsPage() {
   };
 
   return (
+    <PageTransition>
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-bold md:text-2xl">Settings</h1>
@@ -228,5 +230,6 @@ export function SettingsPage() {
         </Card>
       </div>
     </div>
+    </PageTransition>
   );
 }

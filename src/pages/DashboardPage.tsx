@@ -41,6 +41,7 @@ import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
 import { getBudgetCycleMonth, getLast6BudgetCycles, isExpenseInCycle } from "@/lib/budgetCycle";
 import { MonthNavigation } from "@/components/MonthNavigation";
+import { PageTransition } from "@/components/PageTransition";
 
 
 export function DashboardPage() {
@@ -304,6 +305,7 @@ export function DashboardPage() {
   );
 
   return (
+    <PageTransition>
     <div>
       {/* Mobile CTA - visible only on small screens */}
       <div className="mb-6 block sm:hidden">
@@ -538,5 +540,6 @@ export function DashboardPage() {
         onOpenChange={setAddExpenseOpen}
       />
     </div>
+    </PageTransition>
   );
 }

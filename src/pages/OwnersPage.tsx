@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageTransition } from "@/components/PageTransition";
 import { cn } from "@/lib/utils";
 import type { Owner } from "@/types";
 
@@ -131,6 +132,7 @@ export function OwnersPage() {
   };
 
   return (
+    <PageTransition>
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -212,5 +214,6 @@ export function OwnersPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageTransition>
   );
 }

@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { PageTransition } from "@/components/PageTransition";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
 import { getBudgetCycleMonth, isExpenseInCycle } from "@/lib/budgetCycle";
@@ -104,6 +105,7 @@ export function ExpensesPage() {
   const totalFiltered = filtered.reduce((sum, e) => sum + e.amount, 0);
 
   return (
+    <PageTransition>
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -368,5 +370,6 @@ export function ExpensesPage() {
         expense={editingExpense}
       />
     </div>
+    </PageTransition>
   );
 }
