@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { Plus, Trash2, ArrowUpDown, Search } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Trash2, ArrowUpDown, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addMonths, subMonths } from "date-fns";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useExpenseStore } from "@/stores/expenseStore";
 import { useOwnerStore } from "@/stores/ownerStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddExpenseModal } from "@/components/AddExpenseModal";
@@ -26,6 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
+import { getBudgetCycleMonth, getBudgetCycleDisplayLabel, isExpenseInCycle } from "@/lib/budgetCycle";
 
 type SortField = "date" | "amount" | "description";
 type SortDir = "asc" | "desc";
@@ -34,7 +36,9 @@ export function ExpensesPage() {
   const { categories } = useCategoryStore();
   const { expenses, deleteExpense } = useExpenseStore();
   const { owners } = useOwnerStore();
+  const { monthStartDay } = useSettingsStore();
 
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [search, setSearch] = useState("");
@@ -52,8 +56,10 @@ export function ExpensesPage() {
     }
   };
 
+  const month = getBudgetCycleMonth(currentDate, monthStartDay);
+
   const filtered = useMemo(() => {
-    let result = [...expenses];
+    let result = expenses.filter((e) => isExpenseInCycle(e.date, month, monthStartDay));
 
     if (search) {
       const q = search.toLowerCase();
@@ -81,7 +87,7 @@ export function ExpensesPage() {
     });
 
     return result;
-  }, [expenses, search, filterCategory, filterOwner, sortField, sortDir]);
+  }, [expenses, month, monthStartDay, search, filterCategory, filterOwner, sortField, sortDir]);
 
   const openNew = () => {
     setEditingExpense(null);
@@ -105,13 +111,39 @@ export function ExpensesPage() {
             Track and manage your spending
           </p>
         </div>
-        <Button
-          onClick={openNew}
-          className="gap-2 h-10 px-4 w-full sm:w-auto"
-          aria-label="Add new expense"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" /> Add Expense
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <nav className="flex items-center gap-2" aria-label="Month navigation">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentDate((d) => subMonths(d, 1))}
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span
+              className="min-w-[130px] text-center font-semibold text-sm"
+              aria-live="polite"
+            >
+              {getBudgetCycleDisplayLabel(currentDate, monthStartDay)}
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentDate((d) => addMonths(d, 1))}
+              aria-label="Next month"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </nav>
+          <Button
+            onClick={openNew}
+            className="gap-2 h-10 px-4 w-full sm:w-auto"
+            aria-label="Add new expense"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" /> Add Expense
+          </Button>
+        </div>
       </div>
 
       <Card className="border-border/50">
