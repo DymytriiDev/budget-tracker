@@ -11,7 +11,7 @@ interface AppState {
   expenses: { id: string; categoryId: string; date: string; description: string; amount: number; ownerId?: string }[];
   budgets: { id: string; categoryId: string; month: string; limit: number; ownerId?: string; ownerSplits?: { ownerId: string; limit: number }[] }[];
   owners: { id: string; name: string; color: string }[];
-  settings: { monthStartDay: number };
+  settings: { monthStartDay: number; currency?: string };
 }
 
 function collectState(): AppState {
@@ -20,7 +20,7 @@ function collectState(): AppState {
     expenses: useExpenseStore.getState().expenses,
     budgets: useBudgetStore.getState().budgets,
     owners: useOwnerStore.getState().owners,
-    settings: { monthStartDay: useSettingsStore.getState().monthStartDay },
+    settings: { monthStartDay: useSettingsStore.getState().monthStartDay, currency: useSettingsStore.getState().currency },
   };
 }
 
@@ -29,7 +29,12 @@ function applyState(state: AppState) {
   if (state.expenses) useExpenseStore.setState({ expenses: state.expenses });
   if (state.budgets) useBudgetStore.setState({ budgets: state.budgets });
   if (state.owners) useOwnerStore.setState({ owners: state.owners });
-  if (state.settings) useSettingsStore.setState({ monthStartDay: state.settings.monthStartDay });
+  if (state.settings) {
+    useSettingsStore.setState({ 
+      monthStartDay: state.settings.monthStartDay,
+      currency: state.settings.currency || 'EUR'
+    });
+  }
 }
 
 export async function fetchRemoteState(): Promise<AppState | null> {
