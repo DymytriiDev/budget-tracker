@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
-import { getBudgetCycleMonth, isExpenseInCycle } from "@/lib/budgetCycle";
+import { getBudgetCycleMonth, getBudgetCycleDisplayLabel, isExpenseInCycle } from "@/lib/budgetCycle";
 
 export function BudgetsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -201,7 +201,7 @@ export function BudgetsPage() {
             className="min-w-[130px] text-center font-semibold text-sm"
             aria-live="polite"
           >
-            {format(currentDate, "MMMM yyyy")}
+            {getBudgetCycleDisplayLabel(currentDate, monthStartDay)}
           </span>
           <Button
             variant="outline"

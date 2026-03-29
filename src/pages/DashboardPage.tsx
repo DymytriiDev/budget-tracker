@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
-import { getBudgetCycleMonth, getLast6BudgetCycles, isExpenseInCycle } from "@/lib/budgetCycle";
+import { getBudgetCycleMonth, getBudgetCycleDisplayLabel, getLast6BudgetCycles, isExpenseInCycle } from "@/lib/budgetCycle";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -350,7 +350,7 @@ export function DashboardPage() {
             className="min-w-[130px] text-center font-semibold text-sm"
             aria-live="polite"
           >
-            {format(currentDate, "MMMM yyyy")}
+            {getBudgetCycleDisplayLabel(currentDate, monthStartDay)}
           </span>
           <Button
             variant="outline"

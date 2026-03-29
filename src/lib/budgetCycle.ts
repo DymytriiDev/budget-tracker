@@ -66,3 +66,25 @@ export function getLast6BudgetCycles(date: Date, monthStartDay: number): string[
   
   return cycles;
 }
+
+/**
+ * Gets a user-friendly display label for a budget cycle.
+ * If monthStartDay > 20, displays the next month's name for better UX.
+ * For example, with monthStartDay = 25:
+ * - Cycle "2024-01" (Jan 25 - Feb 24) displays as "February 2024"
+ * - Cycle "2024-02" (Feb 25 - Mar 24) displays as "March 2024"
+ */
+export function getBudgetCycleDisplayLabel(date: Date, monthStartDay: number): string {
+  const cycleMonth = getBudgetCycleMonth(date, monthStartDay);
+  const [year, month] = cycleMonth.split('-').map(Number);
+  
+  // If monthStartDay > 20, show the next month for better UX
+  if (monthStartDay > 20) {
+    const displayDate = new Date(year, month, 1); // This gives us the next month
+    return format(displayDate, 'MMMM yyyy');
+  }
+  
+  // Otherwise, show the current month
+  const displayDate = new Date(year, month - 1, 1);
+  return format(displayDate, 'MMMM yyyy');
+}
