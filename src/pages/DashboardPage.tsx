@@ -94,13 +94,13 @@ export function DashboardPage() {
     return categories
       .map((cat) => {
         const budget = monthBudgets.find((b) => b.categoryId === cat.id);
+        if (!budget) return null;
         const spent = monthExpenses
           .filter((e) => e.categoryId === cat.id)
           .reduce((s, e) => s + e.amount, 0);
-        if (!budget && spent === 0) return null;
         return {
           name: cat.name.length > 12 ? cat.name.slice(0, 12) + "…" : cat.name,
-          budget: budget?.limit || 0,
+          budget: budget.limit,
           spent,
           color: cat.color,
         };
@@ -129,8 +129,8 @@ export function DashboardPage() {
       const budgetTotal = budgets
         .filter((b) => b.month === cycleMonth)
         .reduce((s, b) => s + b.limit, 0);
-      const [monthNum] = cycleMonth.split('-').map(Number);
-      const label = format(new Date(2024, monthNum - 1, 1), "MMM");
+      const [year, month] = cycleMonth.split('-').map(Number);
+      const label = format(new Date(year, month - 1, 1), "MMM");
       return { name: label, spent, budget: budgetTotal };
     });
   }, [currentDate, expenses, budgets, monthStartDay]);
@@ -180,19 +180,28 @@ export function DashboardPage() {
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
-        <Bar
-          dataKey="budget"
-          name="Budget"
-          fill="#22c55e"
-          radius={[4, 4, 0, 0]}
-          opacity={0.5}
-        />
-        <Bar
-          dataKey="spent"
-          name="Spent"
-          fill="#3b82f6"
-          radius={[4, 4, 0, 0]}
-        />
+        {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
+          <Bar
+            key={`budget-${index}`}
+            dataKey="budget"
+            name="Budget"
+            fill={entry.color}
+            radius={[4, 4, 0, 0]}
+            opacity={0.6}
+            hide={index > 0}
+          />
+        ))}
+        {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
+          <Bar
+            key={`spent-${index}`}
+            dataKey="spent"
+            name="Spent"
+            fill={entry.color}
+            radius={[4, 4, 0, 0]}
+            opacity={1.0}
+            hide={index > 0}
+          />
+        ))}
       </BarChart>
     </ResponsiveContainer>
   );
