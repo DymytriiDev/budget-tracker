@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Save, Users } from "lucide-react";
-import { format, addMonths, subMonths } from "date-fns";
+import { addMonths, subMonths } from "date-fns";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useBudgetStore } from "@/stores/budgetStore";
 import { useExpenseStore } from "@/stores/expenseStore";
