@@ -1,4 +1,4 @@
-import { format, subMonths } from 'date-fns';
+import { formatDate, subMonths } from '@/lib/date';
 
 /**
  * Gets the budget cycle identifier for a given date and month start day.
@@ -14,11 +14,11 @@ export function getBudgetCycleMonth(date: Date, monthStartDay: number): string {
   // If current day is before the start day, we're in the previous month's cycle
   if (day < monthStartDay) {
     const prevMonth = new Date(year, month - 1, 1);
-    return format(prevMonth, 'yyyy-MM');
+    return formatDate(prevMonth, 'yyyy-MM');
   }
 
   // Otherwise, we're in the current month's cycle
-  return format(date, 'yyyy-MM');
+  return formatDate(date, 'yyyy-MM');
 }
 
 /**
@@ -81,10 +81,10 @@ export function getBudgetCycleDisplayLabel(date: Date, monthStartDay: number): s
   // If monthStartDay > 20, show the next month for better UX
   if (monthStartDay > 20) {
     const displayDate = new Date(year, month, 1); // This gives us the next month
-    return format(displayDate, 'MMMM yyyy');
+    return formatDate(displayDate, 'MMMM yyyy');
   }
   
   // Otherwise, show the current month
   const displayDate = new Date(year, month - 1, 1);
-  return format(displayDate, 'MMMM yyyy');
+  return formatDate(displayDate, 'MMMM yyyy');
 }

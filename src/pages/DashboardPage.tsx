@@ -1,9 +1,6 @@
 import { useState, useMemo, type ReactNode } from "react";
-import { motion } from "framer-motion";
 import { AddExpenseModal } from "@/components/AddExpenseModal";
 import {
-  ChevronLeft,
-  ChevronRight,
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -12,7 +9,7 @@ import {
   Maximize2,
   Plus,
 } from "lucide-react";
-import { format, addMonths, subMonths } from "date-fns";
+import { formatDate } from "@/lib/date";
 import {
   BarChart,
   Bar,
@@ -42,29 +39,9 @@ import {
 } from "@/components/ui/dialog";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
-import { getBudgetCycleMonth, getBudgetCycleDisplayLabel, getLast6BudgetCycles, isExpenseInCycle } from "@/lib/budgetCycle";
+import { getBudgetCycleMonth, getLast6BudgetCycles, isExpenseInCycle } from "@/lib/budgetCycle";
+import { MonthNavigation } from "@/components/MonthNavigation";
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.4,
-      ease: [0, 0, 0.2, 1] as const,
-    },
-  }),
-};
-
-const chartVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0, 0, 0.2, 1] as const },
-  },
-};
 
 export function DashboardPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -130,7 +107,7 @@ export function DashboardPage() {
         .filter((b) => b.month === cycleMonth)
         .reduce((s, b) => s + b.limit, 0);
       const [year, month] = cycleMonth.split('-').map(Number);
-      const label = format(new Date(year, month - 1, 1), "MMM");
+      const label = formatDate(new Date(year, month - 1, 1), "MMM");
       return { name: label, spent, budget: budgetTotal };
     });
   }, [currentDate, expenses, budgets, monthStartDay]);
@@ -346,30 +323,7 @@ export function DashboardPage() {
             Your financial overview at a glance
           </p>
         </div>
-        <nav className="flex items-center gap-2" aria-label="Month navigation">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentDate((d) => subMonths(d, 1))}
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span
-            className="min-w-[130px] text-center font-semibold text-sm"
-            aria-live="polite"
-          >
-            {getBudgetCycleDisplayLabel(currentDate, monthStartDay)}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentDate((d) => addMonths(d, 1))}
-            aria-label="Next month"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </nav>
+        <MonthNavigation currentDate={currentDate} onDateChange={setCurrentDate} />
       </div>
 
       {/* Summary Cards */}
@@ -378,12 +332,7 @@ export function DashboardPage() {
         role="region"
         aria-label="Budget summary"
       >
-        <motion.div
-          custom={0}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
+        <div>
           <Card className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -398,14 +347,9 @@ export function DashboardPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          custom={1}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
+        <div>
           <Card className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -420,14 +364,9 @@ export function DashboardPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          custom={2}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
+        <div>
           <Card className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -450,14 +389,9 @@ export function DashboardPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          custom={3}
-          initial="hidden"
-          animate="visible"
-          variants={cardVariants}
-        >
+        <div>
           <Card className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -472,9 +406,10 @@ export function DashboardPage() {
             <CardContent>
               <p className="text-xl font-bold">{budgetUsedPct.toFixed(1)}%</p>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-                <motion.div
-                  className="h-full rounded-full"
+                <div
+                  className="h-full rounded-full transition-all duration-1000 ease-out"
                   style={{
+                    width: `${Math.min(budgetUsedPct, 100)}%`,
                     backgroundColor:
                       budgetUsedPct > 90
                         ? "#ef4444"
@@ -482,19 +417,16 @@ export function DashboardPage() {
                           ? "#f59e0b"
                           : "#22c55e",
                   }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(budgetUsedPct, 100)}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
                 />
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       {/* Charts Row */}
       <div className="mb-6 grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-2">
-        <motion.div initial="hidden" animate="visible" variants={chartVariants}>
+        <div>
           <ChartCard
             id="bar"
             title="Budget vs Actual"
@@ -503,8 +435,8 @@ export function DashboardPage() {
           >
             {renderBarChart(220)}
           </ChartCard>
-        </motion.div>
-        <motion.div initial="hidden" animate="visible" variants={chartVariants}>
+        </div>
+        <div>
           <ChartCard
             id="pie"
             title="Spending Distribution"
@@ -513,23 +445,18 @@ export function DashboardPage() {
           >
             {renderPieChart(220)}
           </ChartCard>
-        </motion.div>
+        </div>
       </div>
 
       {/* Trend + Top Categories */}
       <div className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
-        <motion.div
-          className="lg:col-span-2"
-          initial="hidden"
-          animate="visible"
-          variants={chartVariants}
-        >
+        <div className="lg:col-span-2">
           <ChartCard id="line" title="Monthly Trend (6 months)">
             {renderLineChart(200)}
           </ChartCard>
-        </motion.div>
+        </div>
 
-        <motion.div initial="hidden" animate="visible" variants={chartVariants}>
+        <div>
           <Card className="border-border/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">
@@ -542,17 +469,11 @@ export function DashboardPage() {
                   No spending yet
                 </p>
               ) : (
-                topCategories.map((cat, i) => {
+                topCategories.map((cat) => {
                   const Icon = getIcon(cat.icon);
                   const pct = cat.limit > 0 ? (cat.spent / cat.limit) * 100 : 0;
                   return (
-                    <motion.div
-                      key={cat.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="space-y-1.5"
-                    >
+                    <div key={cat.id} className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon
@@ -569,25 +490,23 @@ export function DashboardPage() {
                       </div>
                       {cat.limit > 0 && (
                         <div className="h-1 overflow-hidden rounded-full bg-secondary">
-                          <motion.div
-                            className="h-full rounded-full"
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
                             style={{
+                              width: `${Math.min(pct, 100)}%`,
                               backgroundColor:
                                 pct > 100 ? "#ef4444" : cat.color,
                             }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(pct, 100)}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.1 }}
                           />
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 })
               )}
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       {/* Fullscreen Chart Dialog */}

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Plus, Trash2, ArrowUpDown, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addMonths, subMonths } from "date-fns";
+import { Plus, Trash2, ArrowUpDown, Search } from "lucide-react";
+import { formatDate } from "@/lib/date";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useExpenseStore } from "@/stores/expenseStore";
 import { useOwnerStore } from "@/stores/ownerStore";
@@ -27,7 +27,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getIcon } from "@/lib/icons";
 import { formatCurrency } from "@/lib/currency";
-import { getBudgetCycleMonth, getBudgetCycleDisplayLabel, isExpenseInCycle } from "@/lib/budgetCycle";
+import { getBudgetCycleMonth, isExpenseInCycle } from "@/lib/budgetCycle";
+import { MonthNavigation } from "@/components/MonthNavigation";
 
 type SortField = "date" | "amount" | "description";
 type SortDir = "asc" | "desc";
@@ -112,30 +113,7 @@ export function ExpensesPage() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <nav className="flex items-center gap-2" aria-label="Month navigation">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentDate((d) => subMonths(d, 1))}
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span
-              className="min-w-[130px] text-center font-semibold text-sm"
-              aria-live="polite"
-            >
-              {getBudgetCycleDisplayLabel(currentDate, monthStartDay)}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentDate((d) => addMonths(d, 1))}
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </nav>
+          <MonthNavigation currentDate={currentDate} onDateChange={setCurrentDate} />
           <Button
             onClick={openNew}
             className="gap-2 h-10 px-4 w-full sm:w-auto"
@@ -227,7 +205,7 @@ export function ExpensesPage() {
                     onClick={() => openEdit(exp)}
                     onKeyDown={(e) => e.key === "Enter" && openEdit(exp)}
                     tabIndex={0}
-                    aria-label={`${exp.description || cat?.name || 'Expense'}, ${formatCurrency(exp.amount)}, ${format(new Date(exp.date), "MMM dd, yyyy")}`}
+                    aria-label={`${exp.description || cat?.name || 'Expense'}, ${formatCurrency(exp.amount)}, ${formatDate(new Date(exp.date), "MMM dd, yyyy")}`}
                   >
                     {cat && (
                       <div
@@ -246,7 +224,7 @@ export function ExpensesPage() {
                         {exp.description || (cat ? cat.name : "Expense")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(exp.date), "MMM dd, yyyy HH:mm")}
+                        {formatDate(new Date(exp.date), "MMM dd, yyyy HH:mm")}
                         {cat ? ` · ${cat.name}` : ""}
                       </p>
                     </div>
@@ -338,7 +316,7 @@ export function ExpensesPage() {
                         onClick={() => openEdit(exp)}
                       >
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(exp.date), "MMM dd, yyyy HH:mm")}
+                          {formatDate(new Date(exp.date), "MMM dd, yyyy HH:mm")}
                         </TableCell>
                         <TableCell className="font-medium">
                           {exp.description || <span className="text-muted-foreground italic">{cat?.name || "No description"}</span>}

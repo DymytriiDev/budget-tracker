@@ -22,7 +22,8 @@ import { useOwnerStore } from "@/stores/ownerStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { getIcon } from "@/lib/icons";
 import type { Expense } from "@/types";
-import { format } from "date-fns";
+import { formatDate } from "@/lib/date";
+import { normalizeCurrencyInput } from "@/lib/currency";
 
 interface AddExpenseModalProps {
   open: boolean;
@@ -43,8 +44,8 @@ export function AddExpenseModal({
   const { defaultOwnerId } = useSettingsStore();
 
   const [editing, setEditing] = useState<Expense | null>(null);
-  const [formDate, setFormDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [formTime, setFormTime] = useState(format(new Date(), "HH:mm"));
+  const [formDate, setFormDate] = useState(formatDate(new Date(), "yyyy-MM-dd"));
+  const [formTime, setFormTime] = useState(formatDate(new Date(), "HH:mm"));
   const [formDesc, setFormDesc] = useState("");
   const [formAmount, setFormAmount] = useState("");
   const [formCategory, setFormCategory] = useState(categories[0]?.id || "");
@@ -64,8 +65,8 @@ export function AddExpenseModal({
 
   const resetForm = useCallback(() => {
     setEditing(null);
-    setFormDate(format(new Date(), "yyyy-MM-dd"));
-    setFormTime(format(new Date(), "HH:mm"));
+    setFormDate(formatDate(new Date(), "yyyy-MM-dd"));
+    setFormTime(formatDate(new Date(), "HH:mm"));
     setFormDesc("");
     setFormAmount("");
     setFormCategory(categories[0]?.id || "");
@@ -78,8 +79,8 @@ export function AddExpenseModal({
       if (expense) {
         setEditing(expense);
         const expenseDate = new Date(expense.date);
-        setFormDate(format(expenseDate, "yyyy-MM-dd"));
-        setFormTime(format(expenseDate, "HH:mm"));
+        setFormDate(formatDate(expenseDate, "yyyy-MM-dd"));
+        setFormTime(formatDate(expenseDate, "HH:mm"));
         setFormDesc(expense.description);
         setFormAmount(String(expense.amount));
         setFormCategory(expense.categoryId);
@@ -87,8 +88,8 @@ export function AddExpenseModal({
         setErrors({});
       } else {
         setEditing(null);
-        setFormDate(format(new Date(), "yyyy-MM-dd"));
-        setFormTime(format(new Date(), "HH:mm"));
+        setFormDate(formatDate(new Date(), "yyyy-MM-dd"));
+        setFormTime(formatDate(new Date(), "HH:mm"));
         setFormDesc("");
         setFormAmount("");
         setFormCategory(categories[0]?.id || "");
@@ -144,11 +145,8 @@ export function AddExpenseModal({
   };
 
   const handleAmountChange = (value: string) => {
-    const normalized = value.replace(",", ".");
-    const cleaned = normalized.replace(/[^0-9.]/g, "");
-    const parts = cleaned.split(".");
-    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
-    if (parts.length === 2 && parts[1].length > 2) return;
+    const formatted = normalizeCurrencyInput(value);
+    if (formatted === null) return;
     setFormAmount(formatted);
     clearError("amount");
   };

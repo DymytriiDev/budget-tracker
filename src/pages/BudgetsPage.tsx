@@ -1,7 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Save, Users } from "lucide-react";
-import { addMonths, subMonths } from "date-fns";
+import { Save, Users } from "lucide-react";
 import { useCategoryStore } from "@/stores/categoryStore";
 import { useBudgetStore } from "@/stores/budgetStore";
 import { useExpenseStore } from "@/stores/expenseStore";
@@ -19,8 +17,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { getIcon } from "@/lib/icons";
-import { formatCurrency } from "@/lib/currency";
-import { getBudgetCycleMonth, getBudgetCycleDisplayLabel, isExpenseInCycle } from "@/lib/budgetCycle";
+import { formatCurrency, normalizeCurrencyInput } from "@/lib/currency";
+import { getBudgetCycleMonth, isExpenseInCycle } from "@/lib/budgetCycle";
+import { MonthNavigation } from "@/components/MonthNavigation";
 
 export function BudgetsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -48,13 +47,8 @@ export function BudgetsPage() {
   }, []);
 
   const handleLimitChange = (catId: string, value: string) => {
-    // Replace comma with dot for normalization
-    const normalized = value.replace(",", ".");
-    // Allow only digits and one decimal point
-    const cleaned = normalized.replace(/[^0-9.]/g, "");
-    const parts = cleaned.split(".");
-    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
-    if (parts.length === 2 && parts[1].length > 2) return;
+    const formatted = normalizeCurrencyInput(value);
+    if (formatted === null) return;
     setLocalLimits((prev) => ({ ...prev, [catId]: formatted }));
     clearFieldError(catId);
   };
@@ -159,20 +153,14 @@ export function BudgetsPage() {
   };
 
   const handleOwnerSplitChange = (ownerId: string, value: string) => {
-    const normalized = value.replace(",", ".");
-    const cleaned = normalized.replace(/[^0-9.]/g, "");
-    const parts = cleaned.split(".");
-    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
-    if (parts.length === 2 && parts[1].length > 2) return;
+    const formatted = normalizeCurrencyInput(value);
+    if (formatted === null) return;
     setOwnerSplits((prev) => ({ ...prev, [ownerId]: formatted }));
   };
 
   const handleRestChange = (value: string) => {
-    const normalized = value.replace(",", ".");
-    const cleaned = normalized.replace(/[^0-9.]/g, "");
-    const parts = cleaned.split(".");
-    const formatted = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : cleaned;
-    if (parts.length === 2 && parts[1].length > 2) return;
+    const formatted = normalizeCurrencyInput(value);
+    if (formatted === null) return;
     setRestAmount(formatted);
   };
 
@@ -188,38 +176,11 @@ export function BudgetsPage() {
             Set monthly spending limits per category
           </p>
         </div>
-        <nav className="flex items-center gap-2" aria-label="Month navigation">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentDate((d) => subMonths(d, 1))}
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span
-            className="min-w-[130px] text-center font-semibold text-sm"
-            aria-live="polite"
-          >
-            {getBudgetCycleDisplayLabel(currentDate, monthStartDay)}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentDate((d) => addMonths(d, 1))}
-            aria-label="Next month"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </nav>
+        <MonthNavigation currentDate={currentDate} onDateChange={setCurrentDate} />
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0 }}
-        >
+        <div>
           <Card className="border-border/50">
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -232,12 +193,8 @@ export function BudgetsPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        </div>
+        <div>
           <Card className="border-border/50">
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -248,12 +205,8 @@ export function BudgetsPage() {
               <p className="text-xl font-bold">{formatCurrency(totalSpent)}</p>
             </CardContent>
           </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        </div>
+        <div>
           <Card className="border-border/50">
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -268,11 +221,11 @@ export function BudgetsPage() {
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {categories.map((cat, i) => {
+        {categories.map((cat) => {
           const Icon = getIcon(cat.icon);
           const spent = getSpentForCategory(cat.id);
           const limitStr = getLimitForCategory(cat.id);
@@ -282,12 +235,7 @@ export function BudgetsPage() {
           const changed = isChanged(cat.id);
 
           return (
-            <motion.div
-              key={cat.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
+            <div key={cat.id}>
               <Card className="border-border/50">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
@@ -415,7 +363,7 @@ export function BudgetsPage() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           );
         })}
       </div>
