@@ -157,29 +157,16 @@ export function DashboardPage() {
           axisLine={{ stroke: "#2a2d3a" }}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Legend />
-        {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
-          <Bar
-            key={`budget-${index}`}
-            dataKey="budget"
-            name="Budget"
-            fill={entry.color}
-            radius={[4, 4, 0, 0]}
-            opacity={0.6}
-            hide={index > 0}
-          />
-        ))}
-        {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
-          <Bar
-            key={`spent-${index}`}
-            dataKey="spent"
-            name="Spent"
-            fill={entry.color}
-            radius={[4, 4, 0, 0]}
-            opacity={1.0}
-            hide={index > 0}
-          />
-        ))}
+        <Bar dataKey="budget" name="Budget" radius={[4, 4, 0, 0]}>
+          {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
+            <Cell key={`budget-${index}`} fill={entry.color} opacity={0.6} />
+          ))}
+        </Bar>
+        <Bar dataKey="spent" name="Spent" radius={[4, 4, 0, 0]}>
+          {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
+            <Cell key={`spent-${index}`} fill={entry.color} opacity={1.0} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
@@ -330,100 +317,158 @@ export function DashboardPage() {
 
       {/* Summary Cards */}
       <div
-        className="mb-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4"
+        className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
         role="region"
         aria-label="Budget summary"
       >
-        <div>
-          <Card className="border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                Total Budget
-              </CardTitle>
-              <Target className="h-3.5 w-3.5 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{formatCurrency(totalBudget)}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {monthBudgets.length} categories budgeted
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card className="border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                Total Spent
-              </CardTitle>
-              <Wallet className="h-3.5 w-3.5 text-blue-400" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{formatCurrency(totalSpent)}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {monthExpenses.length} transactions
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card className="border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                Remaining
-              </CardTitle>
-              {remaining >= 0 ? (
-                <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              ) : (
-                <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-              )}
-            </CardHeader>
-            <CardContent>
-              <p
-                className={`text-xl font-bold ${remaining >= 0 ? "text-primary" : "text-destructive"}`}
-              >
-                {formatCurrency(Math.abs(remaining))}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {remaining >= 0 ? "under budget" : "over budget"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          <Card className="border-border/50">
-            <CardHeader className="flex flex-row items-center justify-between pb-1">
-              <CardTitle className="text-xs font-medium text-muted-foreground">
-                Budget Used
-              </CardTitle>
-              {budgetUsedPct > 90 ? (
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
-              ) : (
-                <Target className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{budgetUsedPct.toFixed(1)}%</p>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full rounded-full transition-all duration-1000 ease-out"
-                  style={{
-                    width: `${Math.min(budgetUsedPct, 100)}%`,
-                    backgroundColor:
-                      budgetUsedPct > 90
-                        ? "#ef4444"
-                        : budgetUsedPct > 70
-                          ? "#f59e0b"
-                          : "#22c55e",
-                  }}
-                />
+        {/* Budget Used Card */}
+        <Card className="border-border/50 gap-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">
+              Budget Used
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex-shrink-0" style={{ width: 60, height: 60 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Spent", value: totalSpent },
+                        { name: "Remaining", value: Math.max(0, remaining) },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={18}
+                      outerRadius={28}
+                      dataKey="value"
+                      stroke="none"
+                      animationBegin={200}
+                      animationDuration={800}
+                    >
+                      <Cell
+                        fill={
+                          budgetUsedPct > 90
+                            ? "#ef4444"
+                            : budgetUsedPct > 70
+                              ? "#f59e0b"
+                              : "#22c55e"
+                        }
+                      />
+                      <Cell fill="#4b5563" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xl font-bold">{budgetUsedPct.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatCurrency(totalSpent)} spent
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Budget Card */}
+        <Card className="border-border/50 gap-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">
+              Total Budget
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-2">
+              <Target className="h-4 w-4 text-primary mt-1" />
+              <div>
+                <p className="text-xl font-bold">{formatCurrency(totalBudget)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {monthBudgets.length} categories budgeted
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Remaining Card */}
+        <Card className="border-border/50 gap-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">
+              Remaining
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-2">
+              {remaining >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-primary mt-1" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-destructive mt-1" />
+              )}
+              <div>
+                <p
+                  className={`text-xl font-bold ${remaining >= 0 ? "text-primary" : "text-destructive"}`}
+                >
+                  {formatCurrency(Math.abs(remaining))}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {remaining >= 0 ? "under budget" : "over budget"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Categories Card */}
+        <Card className="border-border/50 gap-0">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">
+              Top Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {topCategories.length === 0 ? (
+              <p className="py-2 text-center text-xs text-muted-foreground">
+                No spending yet
+              </p>
+            ) : (
+              topCategories.slice(0, 3).map((cat) => {
+                const Icon = getIcon(cat.icon);
+                const pct = cat.limit > 0 ? (cat.spent / cat.limit) * 100 : 0;
+                return (
+                  <div key={cat.id} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Icon
+                          className="h-3 w-3"
+                          style={{ color: cat.color }}
+                        />
+                        <span className="text-xs font-medium truncate">
+                          {cat.name}
+                        </span>
+                      </div>
+                      <span className="text-xs font-semibold tabular-nums">
+                        {formatCurrency(cat.spent)}
+                      </span>
+                    </div>
+                    {cat.limit > 0 && (
+                      <div className="h-1 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${Math.min(pct, 100)}%`,
+                            backgroundColor:
+                              pct > 100 ? "#ef4444" : cat.color,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Charts Row */}
@@ -450,65 +495,11 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Trend + Top Categories */}
-      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ChartCard id="line" title="Monthly Trend (6 months)">
-            {renderLineChart(200)}
-          </ChartCard>
-        </div>
-
-        <div>
-          <Card className="border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Top Categories
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {topCategories.length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground">
-                  No spending yet
-                </p>
-              ) : (
-                topCategories.map((cat) => {
-                  const Icon = getIcon(cat.icon);
-                  const pct = cat.limit > 0 ? (cat.spent / cat.limit) * 100 : 0;
-                  return (
-                    <div key={cat.id} className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icon
-                            className="h-3.5 w-3.5"
-                            style={{ color: cat.color }}
-                          />
-                          <span className="text-xs font-medium">
-                            {cat.name}
-                          </span>
-                        </div>
-                        <span className="text-xs font-semibold tabular-nums">
-                          {formatCurrency(cat.spent)}
-                        </span>
-                      </div>
-                      {cat.limit > 0 && (
-                        <div className="h-1 overflow-hidden rounded-full bg-secondary">
-                          <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{
-                              width: `${Math.min(pct, 100)}%`,
-                              backgroundColor:
-                                pct > 100 ? "#ef4444" : cat.color,
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </CardContent>
-          </Card>
-        </div>
+      {/* Trend Chart */}
+      <div className="mb-6">
+        <ChartCard id="line" title="Monthly Trend (6 months)">
+          {renderLineChart(200)}
+        </ChartCard>
       </div>
 
       {/* Fullscreen Chart Dialog */}

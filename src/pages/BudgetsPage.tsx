@@ -239,8 +239,8 @@ export function BudgetsPage() {
           return (
             <div key={cat.id}>
               <Card className="border-border/50">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-3">
+                <CardContent>
+                  <div className="flex items-center gap-3 mb-3">
                     <div
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
                       style={{ backgroundColor: cat.color + "20" }}
@@ -248,33 +248,7 @@ export function BudgetsPage() {
                     >
                       <Icon className="h-4 w-4" style={{ color: cat.color }} />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-0.5 flex items-center justify-between">
-                        <p className="text-xs font-medium">{cat.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatCurrency(spent)}{" "}
-                          {limit > 0 && `/ ${formatCurrency(limit)}`}
-                        </p>
-                      </div>
-                      {limit > 0 && (
-                        <div
-                          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary"
-                          role="progressbar"
-                          aria-valuenow={Math.round(pct)}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-label={`${cat.name} budget usage`}
-                        >
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                              width: `${Math.min(pct, 100)}%`,
-                              backgroundColor: isOver ? "#ef4444" : cat.color,
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <p className="text-xs font-medium flex-1">{cat.name}</p>
                     {/* Desktop inline input */}
                     <div className={`hidden items-center gap-2 sm:flex ${shakingField === cat.id ? "animate-shake" : ""}`}>
                       <div className={fieldErrors[cat.id] ? "field-error" : ""}>
@@ -318,6 +292,30 @@ export function BudgetsPage() {
                         </Button>
                       )}
                     </div>
+                  </div>
+                  <div className="w-full">
+                    {limit > 0 && (
+                      <div
+                        className="mb-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary"
+                        role="progressbar"
+                        aria-valuenow={Math.round(pct)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${cat.name} budget usage`}
+                      >
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.min(pct, 100)}%`,
+                            backgroundColor: isOver ? "#ef4444" : cat.color,
+                          }}
+                        />
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(spent)}{" "}
+                      {limit > 0 && `/ ${formatCurrency(limit)}`}
+                    </p>
                   </div>
                   {/* Mobile stacked input */}
                   <div className={`mt-2 sm:hidden ${shakingField === cat.id ? "animate-shake" : ""}`}>
