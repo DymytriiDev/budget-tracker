@@ -3,9 +3,7 @@ import { AddExpenseModal } from "@/components/AddExpenseModal";
 import {
   TrendingUp,
   TrendingDown,
-  Wallet,
   Target,
-  AlertTriangle,
   Maximize2,
   Plus,
 } from "lucide-react";
@@ -29,6 +27,7 @@ import { useCategoryStore } from "@/stores/categoryStore";
 import { useBudgetStore } from "@/stores/budgetStore";
 import { useExpenseStore } from "@/stores/expenseStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useOwnerStore } from "@/stores/ownerStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -53,6 +52,7 @@ export function DashboardPage() {
   const { categories } = useCategoryStore();
   const { budgets } = useBudgetStore();
   const { expenses } = useExpenseStore();
+  const { owners } = useOwnerStore();
 
   const monthBudgets = useMemo(
     () => budgets.filter((b) => b.month === month),
@@ -126,6 +126,52 @@ export function DashboardPage() {
       .sort((a, b) => b.spent - a.spent)
       .slice(0, 5);
   }, [categories, monthExpenses, monthBudgets]);
+
+  const ownerPieData = useMemo(() => {
+    const ownerMap = new Map<string, number>();
+    monthExpenses.forEach((expense) => {
+      const ownerId = expense.ownerId || "unknown";
+      ownerMap.set(ownerId, (ownerMap.get(ownerId) || 0) + expense.amount);
+    });
+    const colors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+    return Array.from(ownerMap.entries())
+      .map(([ownerId, value], index) => {
+        const owner = owners.find((o) => o.id === ownerId);
+        return {
+          name: owner?.name || "Unknown",
+          value,
+          color: owner?.color || colors[index % colors.length],
+        };
+      })
+      .filter((item) => item.value > 0);
+  }, [monthExpenses, owners]);
+
+  const ownerBarData = useMemo(() => {
+    const ownerMap = new Map<string, { budget: number; spent: number }>();
+    monthBudgets.forEach((budget) => {
+      const ownerId = budget.ownerId || "unknown";
+      const current = ownerMap.get(ownerId) || { budget: 0, spent: 0 };
+      ownerMap.set(ownerId, { ...current, budget: current.budget + budget.limit });
+    });
+    monthExpenses.forEach((expense) => {
+      const ownerId = expense.ownerId || "unknown";
+      const current = ownerMap.get(ownerId) || { budget: 0, spent: 0 };
+      ownerMap.set(ownerId, { ...current, spent: current.spent + expense.amount });
+    });
+    const colors = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+    return Array.from(ownerMap.entries())
+      .map(([ownerId, data], index) => {
+        const owner = owners.find((o) => o.id === ownerId);
+        const name = owner?.name || "Unknown";
+        return {
+          name: name.length > 12 ? name.slice(0, 12) + "…" : name,
+          budget: data.budget,
+          spent: data.spent,
+          color: owner?.color || colors[index % colors.length],
+        };
+      })
+      .filter((item) => item.budget > 0 || item.spent > 0);
+  }, [monthBudgets, monthExpenses, owners]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -252,6 +298,79 @@ export function DashboardPage() {
     </ResponsiveContainer>
   );
 
+  const renderOwnerPieChart = (height: number) => (
+    <ResponsiveContainer width="100%" height={height}>
+      <PieChart>
+        <Pie
+          data={ownerPieData}
+          cx="50%"
+          cy="50%"
+          innerRadius={height * 0.22}
+          outerRadius={height * 0.36}
+          dataKey="value"
+          stroke="none"
+          animationBegin={200}
+          animationDuration={800}
+        >
+          {ownerPieData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip
+          content={({ active, payload }) => {
+            if (active && payload && payload.length) {
+              const data = payload[0].payload;
+              const total = ownerPieData.reduce((sum, item) => sum + item.value, 0);
+              return (
+                <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-lg">
+                  <p className="text-sm font-medium">{data.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatCurrency(data.value)} (
+                    {((data.value / total) * 100).toFixed(1)}%)
+                  </p>
+                </div>
+              );
+            }
+            return null;
+          }}
+        />
+        <Legend
+          formatter={(value: string) => (
+            <span className="text-xs text-muted-foreground">{value}</span>
+          )}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+
+  const renderOwnerBarChart = (height: number) => (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={ownerBarData} barGap={4}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
+        <XAxis
+          dataKey="name"
+          tick={{ fill: "#9ca3af", fontSize: 12 }}
+          axisLine={{ stroke: "#2a2d3a" }}
+        />
+        <YAxis
+          tick={{ fill: "#9ca3af", fontSize: 12 }}
+          axisLine={{ stroke: "#2a2d3a" }}
+        />
+        <Tooltip content={<CustomTooltip />} />
+        <Bar dataKey="budget" name="Budget" radius={[4, 4, 0, 0]}>
+          {ownerBarData.map((entry, index) => (
+            <Cell key={`budget-${index}`} fill={entry.color} opacity={0.6} />
+          ))}
+        </Bar>
+        <Bar dataKey="spent" name="Spent" radius={[4, 4, 0, 0]}>
+          {ownerBarData.map((entry, index) => (
+            <Cell key={`spent-${index}`} fill={entry.color} opacity={1.0} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+
   const ChartCard = ({
     id,
     title,
@@ -322,7 +441,7 @@ export function DashboardPage() {
         aria-label="Budget summary"
       >
         {/* Budget Used Card */}
-        <Card className="border-border/50 gap-0">
+       <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Budget Used
@@ -372,7 +491,7 @@ export function DashboardPage() {
         </Card>
 
         {/* Total Budget Card */}
-        <Card className="border-border/50 gap-0">
+       <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Total Budget
@@ -392,7 +511,7 @@ export function DashboardPage() {
         </Card>
 
         {/* Remaining Card */}
-        <Card className="border-border/50 gap-0">
+       <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Remaining
@@ -420,7 +539,7 @@ export function DashboardPage() {
         </Card>
 
         {/* Top Categories Card */}
-        <Card className="border-border/50 gap-0">
+       <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Top Categories
@@ -502,6 +621,30 @@ export function DashboardPage() {
         </ChartCard>
       </div>
 
+      {/* Owner Charts Row */}
+      <div className="mb-6 grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-2">
+        <div>
+          <ChartCard
+            id="owner-pie"
+            title="Spending by Owner"
+            empty={ownerPieData.length === 0}
+            emptyMsg="No spending data."
+          >
+            {renderOwnerPieChart(220)}
+          </ChartCard>
+        </div>
+        <div>
+          <ChartCard
+            id="owner-bar"
+            title="Budget vs Actual by Owner"
+            empty={ownerBarData.length === 0}
+            emptyMsg="No data for this month."
+          >
+            {renderOwnerBarChart(220)}
+          </ChartCard>
+        </div>
+      </div>
+
       {/* Fullscreen Chart Dialog */}
       <Dialog
         open={!!fullscreenChart}
@@ -513,6 +656,8 @@ export function DashboardPage() {
               {fullscreenChart === "bar" && "Budget vs Actual"}
               {fullscreenChart === "pie" && "Spending Distribution"}
               {fullscreenChart === "line" && "Monthly Trend (6 months)"}
+              {fullscreenChart === "owner-pie" && "Spending by Owner"}
+              {fullscreenChart === "owner-bar" && "Budget vs Actual by Owner"}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0 pt-2">
@@ -522,6 +667,10 @@ export function DashboardPage() {
               renderPieChart(Math.min(window.innerHeight * 0.6, 500))}
             {fullscreenChart === "line" &&
               renderLineChart(Math.min(window.innerHeight * 0.6, 500))}
+            {fullscreenChart === "owner-pie" &&
+              renderOwnerPieChart(Math.min(window.innerHeight * 0.6, 500))}
+            {fullscreenChart === "owner-bar" &&
+              renderOwnerBarChart(Math.min(window.innerHeight * 0.6, 500))}
           </div>
         </DialogContent>
       </Dialog>

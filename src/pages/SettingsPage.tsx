@@ -109,7 +109,7 @@ export function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 gap-0">
+       <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Default Owner</CardTitle>
           </CardHeader>

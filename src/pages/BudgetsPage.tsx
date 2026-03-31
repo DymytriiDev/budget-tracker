@@ -183,7 +183,7 @@ export function BudgetsPage() {
 
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <Card className="border-border/50">
+         <Card>
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
                 Total Budget
@@ -197,7 +197,7 @@ export function BudgetsPage() {
           </Card>
         </div>
         <div>
-          <Card className="border-border/50">
+         <Card>
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
                 Total Spent
@@ -209,7 +209,7 @@ export function BudgetsPage() {
           </Card>
         </div>
         <div>
-          <Card className="border-border/50">
+         <Card>
             <CardHeader className="pb-1">
               <CardTitle className="text-xs font-medium text-muted-foreground">
                 Remaining
@@ -259,7 +259,7 @@ export function BudgetsPage() {
                             inputMode="decimal"
                             pattern="[0-9]*[.,]?[0-9]*"
                             placeholder="0.00"
-                            className="w-28 h-10 text-base pl-7 tabular-nums"
+                            className="w-28 h-10 text-base pl-7 tabular-nums max-w-[90px]"
                             value={getLimitForCategory(cat.id)}
                             onChange={(e) => handleLimitChange(cat.id, e.target.value)}
                             onKeyDown={(e) =>
