@@ -137,10 +137,11 @@ export function DashboardPage() {
     return Array.from(ownerMap.entries())
       .map(([ownerId, value], index) => {
         const owner = owners.find((o) => o.id === ownerId);
+        const isUnknown = ownerId === "unknown";
         return {
           name: owner?.name || "Unknown",
           value,
-          color: owner?.color || colors[index % colors.length],
+          color: isUnknown ? "#00000000" : (owner?.color || colors[index % colors.length]),
         };
       })
       .filter((item) => item.value > 0);
@@ -205,7 +206,7 @@ export function DashboardPage() {
         <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="budget" name="Budget" radius={[4, 4, 0, 0]}>
           {(barData as { name: string; budget: number; spent: number; color: string }[]).map((entry, index) => (
-            <Cell key={`budget-${index}`} fill={entry.color} opacity={0.6} />
+            <Cell key={`budget-${index}`} fill={entry.color} opacity={0.5} />
           ))}
         </Bar>
         <Bar dataKey="spent" name="Spent" radius={[4, 4, 0, 0]}>
@@ -359,7 +360,7 @@ export function DashboardPage() {
         <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="budget" name="Budget" radius={[4, 4, 0, 0]}>
           {ownerBarData.map((entry, index) => (
-            <Cell key={`budget-${index}`} fill={entry.color} opacity={0.6} />
+            <Cell key={`budget-${index}`} fill={entry.color} opacity={0.5} />
           ))}
         </Bar>
         <Bar dataKey="spent" name="Spent" radius={[4, 4, 0, 0]}>
@@ -443,7 +444,7 @@ export function DashboardPage() {
         {/* Budget Used Card */}
        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
               Budget Used
             </CardTitle>
           </CardHeader>
@@ -493,7 +494,7 @@ export function DashboardPage() {
         {/* Total Budget Card */}
        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
               Total Budget
             </CardTitle>
           </CardHeader>
@@ -513,7 +514,7 @@ export function DashboardPage() {
         {/* Remaining Card */}
        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
               Remaining
             </CardTitle>
           </CardHeader>
