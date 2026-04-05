@@ -418,6 +418,10 @@ export function DashboardPage() {
       <div className="mb-6 block sm:hidden">
         <Button
           onClick={() => setAddExpenseOpen(true)}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setAddExpenseOpen(true);
+          }}
           className="w-full h-20 text-2xl font-semibold bg-primary hover:bg-primary/90"
         >
           <Plus className="size-6" />
