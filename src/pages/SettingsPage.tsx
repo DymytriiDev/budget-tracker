@@ -18,7 +18,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { pushRemoteState, loadRemoteState } from "@/lib/sync";
 
 export function SettingsPage() {
-  const { monthStartDay, setMonthStartDay, defaultOwnerId, setDefaultOwnerId } = useSettingsStore();
+  const { monthStartDay, setMonthStartDay, defaultOwnerId, setDefaultOwnerId, currency, setCurrency } = useSettingsStore();
   const { owners } = useOwnerStore();
   const token = getAuthToken();
   const local = isLocalDev();
@@ -130,6 +130,38 @@ export function SettingsPage() {
               </Select>
               <p className="text-xs text-muted-foreground">
                 When adding a new expense, the owner field will be pre-filled with your selected default owner.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Currency</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EUR">EUR - Euro</SelectItem>
+                  <SelectItem value="USD">USD - US Dollar</SelectItem>
+                  <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                  <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
+                  <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                  <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                  <SelectItem value="CHF">CHF - Swiss Franc</SelectItem>
+                  <SelectItem value="CNY">CNY - Chinese Yuan</SelectItem>
+                  <SelectItem value="INR">INR - Indian Rupee</SelectItem>
+                  <SelectItem value="MXN">MXN - Mexican Peso</SelectItem>
+                  <SelectItem value="BRL">BRL - Brazilian Real</SelectItem>
+                  <SelectItem value="ZAR">ZAR - South African Rand</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                All amounts in the app will be displayed in your selected currency.
               </p>
             </div>
           </CardContent>

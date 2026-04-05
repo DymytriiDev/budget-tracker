@@ -1,7 +1,10 @@
-export function formatCurrency(amount: number): string {
+import { useSettingsStore } from '@/stores/settingsStore';
+
+export function formatCurrency(amount: number, currency?: string): string {
+  const settingsCurrency = currency || useSettingsStore.getState().currency || 'EUR';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'EUR',
+    currency: settingsCurrency,
   }).format(amount);
 }
 

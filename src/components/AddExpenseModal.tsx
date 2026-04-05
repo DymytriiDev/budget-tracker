@@ -44,7 +44,9 @@ export function AddExpenseModal({
   const { defaultOwnerId } = useSettingsStore();
 
   const [editing, setEditing] = useState<Expense | null>(null);
-  const [formDate, setFormDate] = useState(formatDate(new Date(), "yyyy-MM-dd"));
+  const [formDate, setFormDate] = useState(
+    formatDate(new Date(), "yyyy-MM-dd"),
+  );
   const [formTime, setFormTime] = useState(formatDate(new Date(), "HH:mm"));
   const [formDesc, setFormDesc] = useState("");
   const [formAmount, setFormAmount] = useState("");
@@ -111,7 +113,8 @@ export function AddExpenseModal({
     if (!formDate) newErrors.date = "Date is required";
     const amount = parseFloat(formAmount);
     if (!formAmount.trim()) newErrors.amount = "Amount is required";
-    else if (isNaN(amount) || amount <= 0) newErrors.amount = "Enter a valid amount";
+    else if (isNaN(amount) || amount <= 0)
+      newErrors.amount = "Enter a valid amount";
     if (!formCategory) newErrors.category = "Select a category";
 
     if (Object.keys(newErrors).length > 0) {
@@ -155,11 +158,12 @@ export function AddExpenseModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {editing ? "Edit Expense" : "New Expense"}
-          </DialogTitle>
+          <DialogTitle>{editing ? "Edit Expense" : "New Expense"}</DialogTitle>
         </DialogHeader>
-        <div ref={formRef} className={`space-y-4 py-4 ${shaking ? "animate-shake" : ""}`}>
+        <div
+          ref={formRef}
+          className={`space-y-4 py-4 ${shaking ? "animate-shake" : ""}`}
+        >
           <div className="grid grid-cols-2 gap-3">
             <div className={`space-y-2 ${errors.date ? "field-error" : ""}`}>
               <Label>Date</Label>
@@ -167,10 +171,15 @@ export function AddExpenseModal({
                 type="date"
                 className="h-11 text-base"
                 value={formDate}
-                onChange={(e) => { setFormDate(e.target.value); clearError("date"); }}
+                onChange={(e) => {
+                  setFormDate(e.target.value);
+                  clearError("date");
+                }}
               />
               <div className="field-error-msg" data-visible={!!errors.date}>
-                <span className="text-xs text-destructive pt-0.5">{errors.date}</span>
+                <span className="text-xs text-destructive pt-0.5">
+                  {errors.date}
+                </span>
               </div>
             </div>
             <div className="space-y-2">
@@ -189,16 +198,23 @@ export function AddExpenseModal({
               placeholder="What did you spend on?"
               className="h-11 text-base"
               value={formDesc}
-              onChange={(e) => { setFormDesc(e.target.value); clearError("desc"); }}
+              onChange={(e) => {
+                setFormDesc(e.target.value);
+                clearError("desc");
+              }}
             />
             <div className="field-error-msg" data-visible={!!errors.desc}>
-              <span className="text-xs text-destructive pt-0.5">{errors.desc}</span>
+              <span className="text-xs text-destructive pt-0.5">
+                {errors.desc}
+              </span>
             </div>
           </div>
           <div className={`space-y-2 ${errors.amount ? "field-error" : ""}`}>
             <Label>Amount (€)</Label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">€</span>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">
+                €
+              </span>
               <Input
                 type="text"
                 inputMode="decimal"
@@ -210,51 +226,68 @@ export function AddExpenseModal({
               />
             </div>
             <div className="field-error-msg" data-visible={!!errors.amount}>
-              <span className="text-xs text-destructive pt-0.5">{errors.amount}</span>
+              <span className="text-xs text-destructive pt-0.5">
+                {errors.amount}
+              </span>
             </div>
           </div>
-          <div className={`space-y-2 ${errors.category ? "field-error" : ""}`}>
-            <Label>Category</Label>
-            <Select value={formCategory} onValueChange={(v) => { setFormCategory(v); clearError("category"); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => {
-                  const Icon = getIcon(cat.icon);
-                  return (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      <div className="flex items-center gap-2">
-                        <Icon
-                          className="h-4 w-4"
-                          style={{ color: cat.color }}
-                        />
-                        {cat.name}
-                      </div>
+          <div className="flex align-center">
+            <div
+              className={`space-y-2 ${errors.category ? "field-error" : ""}`}
+            >
+              <Label>Category</Label>
+              <Select
+                value={formCategory}
+                onValueChange={(v) => {
+                  setFormCategory(v);
+                  clearError("category");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => {
+                    const Icon = getIcon(cat.icon);
+                    return (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            className="h-4 w-4"
+                            style={{ color: cat.color }}
+                          />
+                          {cat.name}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              <div className="field-error-msg" data-visible={!!errors.category}>
+                <span className="text-xs text-destructive pt-0.5">
+                  {errors.category}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Owner (optional)</Label>
+              <Select
+                value={formOwner ? formOwner : "none"}
+                onValueChange={(v) => setFormOwner(v === "none" ? "" : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="No owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No owner</SelectItem>
+                  {owners.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id}>
+                      {owner.name}
                     </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-            <div className="field-error-msg" data-visible={!!errors.category}>
-              <span className="text-xs text-destructive pt-0.5">{errors.category}</span>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Owner (optional)</Label>
-            <Select value={formOwner ? formOwner : "none"} onValueChange={(v) => setFormOwner(v === "none" ? "" : v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="No owner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No owner</SelectItem>
-                {owners.map((owner) => (
-                  <SelectItem key={owner.id} value={owner.id}>
-                    {owner.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
         <DialogFooter>
