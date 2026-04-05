@@ -1,73 +1,65 @@
-# React + TypeScript + Vite
+# Budget Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern personal finance management application for tracking expenses, managing budgets, and visualizing spending patterns.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### **Dashboard**
+- Real-time financial overview with key metrics (total budget, spent, remaining, budget usage %)
+- Interactive charts: budget vs actual spending, spending distribution pie chart, 6-month trend analysis
+- Top spending categories with visual progress indicators
+- Customizable budget cycles with configurable month start dates
 
-## React Compiler
+### **Expense Management**
+- Add, edit, and delete expenses with category assignment
+- Advanced filtering by category, owner, and search terms
+- Sortable expense table (by date, amount, description)
+- Monthly expense tracking aligned with budget cycles
+- Mobile-optimized card view and desktop table view
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### **Budget Planning**
+- Set monthly spending limits per category
+- Visual progress bars showing budget utilization
+- Budget split functionality for shared expenses between multiple owners
+- Real-time budget vs actual comparison
+- Warnings for categories exceeding limits
 
-## Expanding the ESLint configuration
+### **Categories & Owners**
+- Custom expense categories with icons and colors
+- Drag-and-drop category reordering
+- Multi-owner support for shared budget management
+- Owner-specific budget allocations
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### **Data Sync**
+- Cloud synchronization via Vercel Blob storage
+- Token-based authentication
+- Automatic state persistence
+- Local development mode
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Frontend**: React 19, TypeScript, Vite
+- **UI**: TailwindCSS, shadcn/ui, Lucide icons
+- **Charts**: Recharts
+- **State**: Zustand
+- **Routing**: React Router
+- **Deployment**: Vercel
+- **Storage**: Vercel Blob
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `AUTH_TOKEN` - Authentication token for API access
+- `BLOB_READ_WRITE_TOKEN` - Vercel Blob storage token
