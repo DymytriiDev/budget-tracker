@@ -2,7 +2,7 @@
 
 A modern personal finance management application for tracking expenses, managing budgets, and visualizing spending patterns.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDymytriiDev%2Fbudget-tracker&env=AUTH_TOKEN&envDescription=Authentication%20token%20for%20API%20access&envLink=https%3A%2F%2Fgithub.com%2FDymytriiDev%2Fbudget-tracker%23environment-variables&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D&branch=db)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDymytriiDev%2Fbudget-tracker%2Fdb&env=AUTH_TOKEN&envDescription=Authentication%20token%20for%20API%20access&envLink=https%3A%2F%2Fgithub.com%2FDymytriiDev%2Fbudget-tracker%23environment-variables&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D)
 
 ## Features
 
