@@ -12,6 +12,8 @@ import {
   stopSyncListeners,
 } from "@/lib/sync";
 import { LoginPage } from "@/pages/LoginPage";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useOnboardingStore } from "@/stores/onboardingStore";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -21,6 +23,13 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const [status, setStatus] = useState<
     "loading" | "authenticated" | "unauthenticated"
   >("loading");
+
+  const { isCompleted: onboardingCompleted } = useOnboardingStore();
+
+  // Determine if onboarding is needed:
+  // - Only rely on the explicit completion flag
+  // - This prevents skipping onboarding when categories are added mid-flow
+  const needsOnboarding = !onboardingCompleted;
 
   const bootstrap = useCallback(async () => {
     // On localhost, skip auth — use localStorage only
@@ -89,6 +98,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (status === "unauthenticated") {
     return <LoginPage onAuthenticated={handleAuthenticated} />;
+  }
+
+  // Show onboarding wizard for fresh installs
+  if (needsOnboarding) {
+    return <OnboardingWizard />;
   }
 
   return <>{children}</>;
