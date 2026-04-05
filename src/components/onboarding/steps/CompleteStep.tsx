@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Check,
@@ -7,12 +7,11 @@ import {
   Download,
   Sparkles,
   Link as LinkIcon,
-} from 'lucide-react';
-import { useOnboardingStore } from '@/stores/onboardingStore';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { getAuthToken, setAuthToken, isLocalDev } from '@/lib/auth';
-import { startSyncListeners } from '@/lib/sync';
+} from "lucide-react";
+import { useOnboardingStore } from "@/stores/onboardingStore";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { getAuthToken, setAuthToken, isLocalDev } from "@/lib/auth";
 
 interface CompleteStepProps {
   onBack: () => void;
@@ -20,14 +19,14 @@ interface CompleteStepProps {
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 export function CompleteStep({ onBack }: CompleteStepProps) {
   const { completeOnboarding } = useOnboardingStore();
   const [copied, setCopied] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [shareLink, setShareLink] = useState('');
+  const [shareLink, setShareLink] = useState("");
   const [canShare, setCanShare] = useState(false);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -50,11 +49,12 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
       setShareLink(window.location.origin);
     }
 
-    setCanShare(typeof navigator.share === 'function');
+    setCanShare(typeof navigator.share === "function");
 
     const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+        true;
     setIsInstalled(isStandalone);
 
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -62,12 +62,12 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
     return () => {
       window.removeEventListener(
-        'beforeinstallprompt',
-        handleBeforeInstallPrompt
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
       );
     };
   }, []);
@@ -78,11 +78,11 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = shareLink;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -93,8 +93,8 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Budget Tracker',
-          text: 'Access your budget tracker with this link',
+          title: "Budget Tracker",
+          text: "Access your budget tracker with this link",
           url: shareLink,
         });
       } catch {
@@ -107,7 +107,7 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
     if (deferredPrompt) {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
+      if (outcome === "accepted") {
         setIsInstalled(true);
       }
       setDeferredPrompt(null);
@@ -116,9 +116,6 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
 
   const handleComplete = () => {
     completeOnboarding();
-    if (!isLocalDev() && token) {
-      startSyncListeners();
-    }
   };
 
   const local = isLocalDev();
@@ -132,8 +129,8 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
         <h1 className="text-2xl font-bold">You're All Set!</h1>
         <p className="mt-2 text-muted-foreground">
           {local
-            ? 'Your data is stored locally on this device.'
-            : 'Save your access link to use on other devices.'}
+            ? "Your data is stored locally on this device."
+            : "Save your access link to use on other devices."}
         </p>
       </div>
 
@@ -165,7 +162,7 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
-                {copied ? 'Copied!' : 'Copy Link'}
+                {copied ? "Copied!" : "Copy Link"}
               </Button>
               {canShare && (
                 <Button
@@ -193,8 +190,8 @@ export function CompleteStep({ onBack }: CompleteStepProps) {
                 <h3 className="font-medium">Install App</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {isInstalled
-                    ? 'App is already installed!'
-                    : 'Install Budget Tracker for quick access and offline use.'}
+                    ? "App is already installed!"
+                    : "Install Budget Tracker for quick access and offline use."}
                 </p>
                 {!isInstalled && deferredPrompt && (
                   <Button

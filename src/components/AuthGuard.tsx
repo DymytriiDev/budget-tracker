@@ -6,11 +6,7 @@ import {
   extractTokenFromUrl,
   isLocalDev,
 } from "@/lib/auth";
-import {
-  loadRemoteState,
-  startSyncListeners,
-  stopSyncListeners,
-} from "@/lib/sync";
+import { loadRemoteState } from "@/lib/sync";
 import { LoginPage } from "@/pages/LoginPage";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useOnboardingStore } from "@/stores/onboardingStore";
@@ -53,7 +49,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
     // Try to load remote state (validates token implicitly)
     const loaded = await loadRemoteState();
     if (loaded) {
-      startSyncListeners();
       setStatus("authenticated");
       return;
     }
@@ -66,8 +61,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
       if (res.status === 401) {
         setStatus("unauthenticated");
       } else {
-        // Token valid, no remote data yet — start syncing local data
-        startSyncListeners();
         setStatus("authenticated");
       }
     } catch {
@@ -78,13 +71,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     bootstrap();
-    return () => stopSyncListeners();
   }, [bootstrap]);
 
   const handleAuthenticated = useCallback(async () => {
     setStatus("loading");
     await loadRemoteState();
-    startSyncListeners();
     setStatus("authenticated");
   }, []);
 
